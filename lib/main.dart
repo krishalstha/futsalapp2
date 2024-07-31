@@ -11,6 +11,7 @@ void main() {
     initialRoute: 'LogIn',
     routes: {
       'LogIn': (context) => MyLogIn(),
+
       'Register': (context) => MyRegister(),
       'Forget': (context) => MyForget(),
       'home': (context) => MyHome(),
