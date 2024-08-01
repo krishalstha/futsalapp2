@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'booking_screen.dart'; // Import the BookingScreen
+import 'package:newfutsal/display_screen/BookedScreen.dart';
+import 'booking_screen.dart';
 
 class MyHome extends StatefulWidget {
   const MyHome({Key? key}) : super(key: key);
@@ -9,7 +10,7 @@ class MyHome extends StatefulWidget {
 }
 
 class _MyHomeState extends State<MyHome> {
-  int _selectedIndex = 0; // Track the selected tab
+  int _selectedIndex = 0;
 
   void _onItemTapped(int index) {
     setState(() {
@@ -18,25 +19,29 @@ class _MyHomeState extends State<MyHome> {
 
     switch (index) {
       case 0:
-      // Navigate to Home
         Navigator.of(context).pushReplacement(MaterialPageRoute(
           builder: (context) => MyHome(),
         ));
         break;
       case 1:
-      // Navigate to Courts
-      // Replace with your courts screen widget if you have one
-        break;
-      case 2:
       // Navigate to Booking
         Navigator.of(context).push(MaterialPageRoute(
-          builder: (context) => BookingScreen(),
+          builder: (context) => BookedScreen(),
+          settings: RouteSettings(
+            arguments: {
+              'selectedDate': DateTime.now(), // Example argument
+              'selectedTime': TimeOfDay.now(), // Example argument
+              'selectedLength': 60, // Example argument
+              'selectedCourt': 1, // Example argument
+              'selectedPaymentMethod': 'Credit Card', // Example argument
+            },
+          ),
         ));
         break;
-      case 3:
-      // Navigate to Profile
-      // Replace with your profile screen widget if you have one
+      case 2:
+        //removing Profile
         break;
+
     }
   }
 
@@ -50,7 +55,7 @@ class _MyHomeState extends State<MyHome> {
         leading: Padding(
           padding: const EdgeInsets.only(left: 20.0),
           child: CircleAvatar(
-            backgroundImage: AssetImage('assets/ceo.jpg'), // Replace with user's profile image
+            backgroundImage: AssetImage('assets/ceo.jpg'),
           ),
         ),
         title: Column(
@@ -74,7 +79,6 @@ class _MyHomeState extends State<MyHome> {
       ),
       body: Column(
         children: [
-          // Search Bar
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: TextField(
@@ -90,7 +94,6 @@ class _MyHomeState extends State<MyHome> {
               ),
             ),
           ),
-          // Available List
           Expanded(
             child: ListView(
               padding: const EdgeInsets.all(16.0),
@@ -101,7 +104,7 @@ class _MyHomeState extends State<MyHome> {
                   rating: 4.3,
                   price: 500,
                   slots: 3,
-                  imageUrl: 'assets/std.jpeg', // Replace with your image
+                  imageUrl: 'assets/std.jpeg',
                 ),
                 FutsalCard(
                   title: 'Kathmandu Futsal',
@@ -109,7 +112,7 @@ class _MyHomeState extends State<MyHome> {
                   rating: 4.0,
                   price: 500,
                   slots: 3,
-                  imageUrl: 'assets/ground.jpeg', // Replace with your image
+                  imageUrl: 'assets/ground.jpeg',
                 ),
                 FutsalCard(
                   title: 'Kathmandu Futsal',
@@ -117,7 +120,7 @@ class _MyHomeState extends State<MyHome> {
                   rating: 4.0,
                   price: 500,
                   slots: 3,
-                  imageUrl: 'assets/std.jpeg', // Replace with your image
+                  imageUrl: 'assets/std.jpeg',
                 ),
               ],
             ),
@@ -129,16 +132,16 @@ class _MyHomeState extends State<MyHome> {
         selectedItemColor: Colors.black,
         unselectedItemColor: Colors.grey,
         showUnselectedLabels: true,
-        onTap: _onItemTapped, // Handle tap events
+        onTap: _onItemTapped,
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
             label: 'Home',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.sports_soccer),
-            label: 'Courts',
-          ),
+          // BottomNavigationBarItem(
+          //   icon: Icon(Icons.sports_soccer),
+          //   label: 'Courts',
+          // ),
           BottomNavigationBarItem(
             icon: Icon(Icons.calendar_today),
             label: 'Booking',
@@ -172,39 +175,46 @@ class FutsalCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
-            child: Image.asset(imageUrl, height: 150, width: double.infinity, fit: BoxFit.cover),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                Text(location, style: TextStyle(fontSize: 14, color: Colors.grey)),
-                Row(
-                  children: [
-                    Icon(Icons.star, color: Colors.yellow, size: 16),
-                    Text(rating.toString(), style: TextStyle(fontSize: 14)),
-                  ],
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text('Rs${price}/hr', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                    Text('${slots} slots available', style: TextStyle(fontSize: 14, color: Colors.green)),
-                  ],
-                ),
-              ],
+    return GestureDetector(
+      onTap: () {
+        Navigator.of(context).push(MaterialPageRoute(
+          builder: (context) => BookingScreen(),
+        ));
+      },
+      child: Card(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
+              child: Image.asset(imageUrl, height: 250, width: double.infinity, fit: BoxFit.cover),
             ),
-          ),
-        ],
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text(location, style: TextStyle(fontSize: 14, color: Colors.grey)),
+                  Row(
+                    children: [
+                      Icon(Icons.star, color: Colors.yellow, size: 16),
+                      Text(rating.toString(), style: TextStyle(fontSize: 14)),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Rs${price}/hr', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      Text('${slots} slots available', style: TextStyle(fontSize: 14, color: Colors.green)),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

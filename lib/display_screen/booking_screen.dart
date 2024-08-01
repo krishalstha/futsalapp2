@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'BookedScreen.dart';
 
 class BookingScreen extends StatefulWidget {
   const BookingScreen({Key? key}) : super(key: key);
@@ -43,9 +44,9 @@ class _BookingScreenState extends State<BookingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100], // Set background color here
       appBar: AppBar(
         title: Text('Book Court'),
+        backgroundColor: Colors.grey,
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
@@ -53,6 +54,7 @@ class _BookingScreenState extends State<BookingScreen> {
           },
         ),
       ),
+      backgroundColor: Colors.grey[450],
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -69,15 +71,14 @@ class _BookingScreenState extends State<BookingScreen> {
                     style: TextStyle(fontSize: 18, color: Colors.blue),
                   ),
                 ),
-                // Add other date options if needed
               ],
             ),
             SizedBox(height: 16),
-            Text('Futsal: Shankhamul Futsal', style: TextStyle(fontSize: 18)),
+            Text('Futsal: ReaverField Futsal', style: TextStyle(fontSize: 18)),
             SizedBox(height: 8),
-            Text('Location: Shankhamul', style: TextStyle(fontSize: 18)),
+            Text('Location: Kathmandu', style: TextStyle(fontSize: 18)),
             SizedBox(height: 16),
-            Text('Length', style: TextStyle(fontSize: 18)),
+            Text('Time', style: TextStyle(fontSize: 18)),
             Row(
               children: [
                 IconButton(
@@ -88,7 +89,7 @@ class _BookingScreenState extends State<BookingScreen> {
                     });
                   },
                 ),
-                Text('$selectedLength min', style: TextStyle(fontSize: 18)),
+                Text('${selectedLength} minutes', style: TextStyle(fontSize: 18)),
                 IconButton(
                   icon: Icon(Icons.add),
                   onPressed: () {
@@ -100,90 +101,57 @@ class _BookingScreenState extends State<BookingScreen> {
               ],
             ),
             SizedBox(height: 16),
-            Text('Time', style: TextStyle(fontSize: 18)),
-            Slider(
-              value: selectedTime.hour.toDouble(),
-              min: 5,
-              max: 22,
-              divisions: 17,
-              label: selectedTime.format(context),
-              onChanged: (double value) {
+            Text('Court', style: TextStyle(fontSize: 18)),
+            DropdownButton<int>(
+              value: selectedCourt,
+              items: [
+                DropdownMenuItem(value: 1, child: Text('Court 1')),
+                DropdownMenuItem(value: 2, child: Text('Court 2')),
+              ],
+              onChanged: (int? value) {
                 setState(() {
-                  selectedTime = TimeOfDay(hour: value.toInt(), minute: 0);
+                  selectedCourt = value!;
                 });
               },
             ),
-            Text('${selectedTime.format(context)} - ${(selectedTime.hour + 1) % 24}:00', style: TextStyle(fontSize: 18)),
             SizedBox(height: 16),
-            Text('Court', style: TextStyle(fontSize: 18)),
-            Row(
-              children: [
-                for (int i = 1; i <= 4; i++)
-                  Padding(
-                    padding: const EdgeInsets.all(4.0),
-                    child: ChoiceChip(
-                      label: Text('Court $i'),
-                      selected: selectedCourt == i,
-                      onSelected: (bool selected) {
-                        setState(() {
-                          selectedCourt = i;
-                        });
-                      },
-                    ),
-                  ),
+            Text('Payment Method', style: TextStyle(fontSize: 18)),
+            DropdownButton<String>(
+              value: selectedPaymentMethod,
+              items: [
+                DropdownMenuItem(value: 'Cash', child: Text('Cash')),
+                DropdownMenuItem(value: 'Credit card', child: Text('Credit card')),
               ],
+              onChanged: (String? value) {
+                setState(() {
+                  selectedPaymentMethod = value!;
+                });
+              },
             ),
-            SizedBox(height: 16),
-            Text('Payment', style: TextStyle(fontSize: 18)),
-            Row(
-              children: [
-                ChoiceChip(
-                  label: Text('Credit card'),
-                  selected: selectedPaymentMethod == 'Credit card',
-                  onSelected: (bool selected) {
-                    setState(() {
-                      selectedPaymentMethod = 'Credit card';
-                    });
-                  },
-                ),
-                SizedBox(width: 8),
-                ChoiceChip(
-                  label: Text('Cash'),
-                  selected: selectedPaymentMethod == 'Cash',
-                  onSelected: (bool selected) {
-                    setState(() {
-                      selectedPaymentMethod = 'Cash';
-                    });
-                  },
-                ),
-              ],
-            ),
-            SizedBox(height: 16),
-            Text('Payment card: 1234 - **** - **** - 2468', style: TextStyle(fontSize: 18)),
             Spacer(),
             Center(
               child: ElevatedButton(
                 onPressed: () {
-                  // Handle booking confirmation
-                  showDialog(
-                    context: context,
-                    builder: (context) {
-                      return AlertDialog(
-                        title: Text('Booking Confirmed'),
-                        content: Text('Your booking has been confirmed.'),
-                        actions: [
-                          TextButton(
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                            child: Text('OK'),
-                          ),
-                        ],
-                      );
-                    },
+
+
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => BookedScreen(),
+                      settings: RouteSettings(
+                        arguments: {
+                          'selectedDate': selectedDate,
+                          'selectedTime': selectedTime,
+                          'selectedLength': selectedLength,
+                          'selectedCourt': selectedCourt,
+                          'selectedPaymentMethod': selectedPaymentMethod,
+                        },
+                      ),
+                    ),
                   );
+
+
                 },
-                child: Text('Book (\$18)'),
+                child: Text('Book Now'),
               ),
             ),
           ],
