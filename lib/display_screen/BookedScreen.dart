@@ -1,6 +1,31 @@
 import 'package:flutter/material.dart';
 
-class BookedScreen extends StatelessWidget {
+class BookedScreen extends StatefulWidget {
+  @override
+  _BookedScreenState createState() => _BookedScreenState();
+}
+
+class _BookedScreenState extends State<BookedScreen> {
+  int _selectedIndex = 0;
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+      // Add navigation logic here based on the selected index
+      switch (_selectedIndex) {
+        case 0:
+          Navigator.of(context).pushNamed('/home');
+          break;
+        case 1:
+          Navigator.of(context).pushNamed('/booking');
+          break;
+        case 2:
+          Navigator.of(context).pushNamed('/profile');
+          break;
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final Map arguments = ModalRoute.of(context)!.settings.arguments as Map;
@@ -45,6 +70,27 @@ class BookedScreen extends StatelessWidget {
             ),
           ],
         ),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        selectedItemColor: Colors.black,
+        unselectedItemColor: Colors.grey,
+        showUnselectedLabels: true,
+        onTap: _onItemTapped,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.calendar_today),
+            label: 'Booking',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Profile',
+          ),
+        ],
       ),
     );
   }

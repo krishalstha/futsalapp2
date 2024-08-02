@@ -39,7 +39,7 @@ class _MyHomeState extends State<MyHome> {
         ));
         break;
       case 2:
-        //removing Profile
+      //removing Profile
         break;
 
     }
