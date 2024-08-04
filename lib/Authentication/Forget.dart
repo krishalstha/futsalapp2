@@ -70,7 +70,7 @@ class _MyForgetState extends State<MyForget> {
                       children: [
                         TextButton(
                           onPressed: () {
-                            Navigator.pushNamed(context, 'Register');
+                            Navigator.pushNamed(context, 'LogIn');
                           },
                           child: Text(
                             'Sign In',
@@ -83,7 +83,7 @@ class _MyForgetState extends State<MyForget> {
                         ),
                         CircleAvatar(
                           radius: 30,
-                          backgroundColor: Color(0xff4c505b),
+                          backgroundColor: Colors.teal,
                           child: IconButton(
                             color: Colors.white,
                             onPressed: () {},

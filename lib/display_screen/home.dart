@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:newfutsal/display_screen/BookedScreen.dart';
+import 'package:newfutsal/display_screen/UserProfile.dart';
 import 'booking_screen.dart';
+import 'package:newfutsal/widget_bar/custom_app_bar.dart';
 
 class MyHome extends StatefulWidget {
   const MyHome({Key? key}) : super(key: key);
@@ -19,64 +21,30 @@ class _MyHomeState extends State<MyHome> {
 
     switch (index) {
       case 0:
-        Navigator.of(context).pushReplacement(MaterialPageRoute(
-          builder: (context) => MyHome(),
-        ));
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => MyHome()),
+        );
         break;
       case 1:
-      // Navigate to Booking
-        Navigator.of(context).push(MaterialPageRoute(
-          builder: (context) => BookedScreen(),
-          settings: RouteSettings(
-            arguments: {
-              'selectedDate': DateTime.now(), // Example argument
-              'selectedTime': TimeOfDay.now(), // Example argument
-              'selectedLength': 60, // Example argument
-              'selectedCourt': 1, // Example argument
-              'selectedPaymentMethod': 'Credit Card', // Example argument
-            },
-          ),
-        ));
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => BookedScreen()),
+        );
         break;
       case 2:
-      //removing Profile
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => UserProfile()),
+        );
         break;
-
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        toolbarHeight: 80,
-        backgroundColor: Colors.grey,
-        elevation: 0,
-        leading: Padding(
-          padding: const EdgeInsets.only(left: 20.0),
-          child: CircleAvatar(
-            backgroundImage: AssetImage('assets/ceo.jpg'),
-          ),
-        ),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Hello,', style: TextStyle(fontSize: 16, color: Colors.white)),
-            Text('Demo User', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
-          ],
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.notifications, color: Colors.yellow),
-            onPressed: () {},
-          ),
-          IconButton(
-            icon: Icon(Icons.account_circle, color: Colors.white),
-            onPressed: () {},
-          ),
-          SizedBox(width: 20),
-        ],
-      ),
+      appBar: CustomAppBar(title: 'Home', showLeading: true),
       body: Column(
         children: [
           Padding(
@@ -103,7 +71,7 @@ class _MyHomeState extends State<MyHome> {
                   location: 'Nayabazar - Rever Field , KATHMANDU',
                   rating: 4.3,
                   price: 500,
-                  slots: 3,
+                  slots: 2,
                   imageUrl: 'assets/std.jpeg',
                 ),
                 FutsalCard(
@@ -111,17 +79,10 @@ class _MyHomeState extends State<MyHome> {
                   location: 'Nayabazar - Rever Field , KATHMANDU',
                   rating: 4.0,
                   price: 500,
-                  slots: 3,
+                  slots: 2,
                   imageUrl: 'assets/ground.jpeg',
                 ),
-                FutsalCard(
-                  title: 'Kathmandu Futsal',
-                  location: 'Nayabazar - Rever Field , KATHMANDU',
-                  rating: 4.0,
-                  price: 500,
-                  slots: 3,
-                  imageUrl: 'assets/std.jpeg',
-                ),
+
               ],
             ),
           ),
@@ -130,7 +91,7 @@ class _MyHomeState extends State<MyHome> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         selectedItemColor: Colors.black,
-        unselectedItemColor: Colors.grey,
+        unselectedItemColor: Colors.teal,
         showUnselectedLabels: true,
         onTap: _onItemTapped,
         items: const [
@@ -138,13 +99,9 @@ class _MyHomeState extends State<MyHome> {
             icon: Icon(Icons.home),
             label: 'Home',
           ),
-          // BottomNavigationBarItem(
-          //   icon: Icon(Icons.sports_soccer),
-          //   label: 'Courts',
-          // ),
           BottomNavigationBarItem(
             icon: Icon(Icons.calendar_today),
-            label: 'Booking',
+            label: 'Booked',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),

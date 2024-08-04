@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:newfutsal/widget_bar/custom_app_bar.dart';
 
 class BookedScreen extends StatefulWidget {
   @override
@@ -6,47 +7,20 @@ class BookedScreen extends StatefulWidget {
 }
 
 class _BookedScreenState extends State<BookedScreen> {
-  int _selectedIndex = 0;
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-      // Add navigation logic here based on the selected index
-      switch (_selectedIndex) {
-        case 0:
-          Navigator.of(context).pushNamed('/home');
-          break;
-        case 1:
-          Navigator.of(context).pushNamed('/booking');
-          break;
-        case 2:
-          Navigator.of(context).pushNamed('/profile');
-          break;
-      }
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
-    final Map arguments = ModalRoute.of(context)!.settings.arguments as Map;
+    // Ensure the arguments are not null and have the expected values.
+    final Map arguments = ModalRoute.of(context)!.settings.arguments as Map? ?? {};
 
-    DateTime selectedDate = arguments['selectedDate'];
-    TimeOfDay selectedTime = arguments['selectedTime'];
-    int selectedLength = arguments['selectedLength'];
-    int selectedCourt = arguments['selectedCourt'];
-    String selectedPaymentMethod = arguments['selectedPaymentMethod'];
+    // Extract the required values with fallback defaults if necessary.
+    DateTime selectedDate = arguments['selectedDate'] ?? DateTime.now();
+    TimeOfDay selectedTime = arguments['selectedTime'] ?? TimeOfDay.now();
+    int selectedLength = arguments['selectedLength'] ?? 0;
+    int selectedCourt = arguments['selectedCourt'] ?? 0;
+    String selectedPaymentMethod = arguments['selectedPaymentMethod'] ?? 'Unknown';
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Court Booked'),
-        backgroundColor: Colors.grey,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-        ),
-      ),
+      appBar: CustomAppBar(title: 'Booking Details', showLeading: true),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -54,7 +28,7 @@ class _BookedScreenState extends State<BookedScreen> {
           children: [
             Text('Booking Confirmed!', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
             SizedBox(height: 16),
-            Text('Date: ${selectedDate.toLocal()}'.split(' ')[0], style: TextStyle(fontSize: 18)),
+            Text('Date: ${selectedDate.toLocal().toString().split(' ')[0]}', style: TextStyle(fontSize: 18)),
             Text('Time: ${selectedTime.format(context)}', style: TextStyle(fontSize: 18)),
             Text('Duration: $selectedLength minutes', style: TextStyle(fontSize: 18)),
             Text('Court: $selectedCourt', style: TextStyle(fontSize: 18)),
@@ -70,27 +44,6 @@ class _BookedScreenState extends State<BookedScreen> {
             ),
           ],
         ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        selectedItemColor: Colors.black,
-        unselectedItemColor: Colors.grey,
-        showUnselectedLabels: true,
-        onTap: _onItemTapped,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_today),
-            label: 'Booking',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
       ),
     );
   }

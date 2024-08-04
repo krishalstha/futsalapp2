@@ -11,15 +11,11 @@ class _MyRegisterState extends State<MyRegister> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.only(left: 20, top: 30),
+      padding: EdgeInsets.only(left: 30, top: 100),
       decoration: BoxDecoration(
           image: DecorationImage(image: AssetImage('assets/std.jpeg'), fit:BoxFit.cover)),
       child: Scaffold(
-        appBar: AppBar(
 
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-        ),
         backgroundColor: Colors.transparent,
         body: Stack(
           children: [
@@ -91,19 +87,39 @@ class _MyRegisterState extends State<MyRegister> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Sign In', style: TextStyle(
+                        Text('Sign Up', style: TextStyle(
                             color: Color(0xFFE1E0E0),
                             fontSize: 27, fontWeight: FontWeight.w700
                         ),
                         ),
                         CircleAvatar(radius: 30,
-                          backgroundColor: Color(0xff4c505b),
+                          backgroundColor: Colors.teal,
                           child: IconButton(
                             color: Colors.white,
                             onPressed: (){},
                             icon: Icon(Icons.arrow_forward),
                           ),
                         )
+                      ],
+                    ),
+                    SizedBox(height: 10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pushNamed(context, 'LogIn');
+                          },
+                          child: Text(
+                            'Sign In',
+                            style: TextStyle(
+                              decoration: TextDecoration.underline,
+                              fontSize: 20,
+                              color: Color(0xFFE1E0E0),
+                            ),
+                          ),
+                        ),
+
                       ],
                     ),
 

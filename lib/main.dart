@@ -5,11 +5,11 @@ import 'package:newfutsal/Authentication/Forget.dart';
 import 'package:newfutsal/display_screen/home.dart';
 import 'package:newfutsal/display_screen/booking_screen.dart';
 import 'package:newfutsal/display_screen/BookedScreen.dart';
-
+import 'package:newfutsal/display_screen/UserProfile.dart';
 void main() {
   runApp(MaterialApp(
     debugShowCheckedModeBanner: false,
-    initialRoute: 'home',
+    initialRoute: 'LogIn',
     routes: {
       'LogIn': (context) => MyLogIn(),
       'Register': (context) => MyRegister(),
@@ -17,6 +17,7 @@ void main() {
       'home': (context) => MyHome(),
       'BookingScreen': (context) => BookingScreen(),
       'BookedScreen': (context) => BookedScreen(),
+      'UserProfile': (context) => UserProfile(),
     },
   ));
 }
