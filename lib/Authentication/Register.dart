@@ -5,13 +5,21 @@ class MyRegister extends StatefulWidget {
 
   @override
   State<MyRegister> createState() => _MyRegisterState();
+
 }
 
 class _MyRegisterState extends State<MyRegister> {
+  // List of dropdown items
+  List dropDownListData = [
+    {"title": "Admin", "value": "1"},
+    {"title": "User", "value": "2"},
+  ];
+
+  String defaultValue = "";
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.only(left: 30, top: 100),
+      padding: EdgeInsets.only(left: 30, top: 90),
       decoration: BoxDecoration(
           image: DecorationImage(image: AssetImage('assets/std.jpeg'), fit:BoxFit.cover)),
       child: Scaffold(
@@ -29,11 +37,42 @@ class _MyRegisterState extends State<MyRegister> {
             SingleChildScrollView(
               child: Container(
                 padding: EdgeInsets.only(
-                    top: MediaQuery.of(context).size.height*0.3,
+                    top: MediaQuery.of(context).size.height * 0.2,
                     right: 35,
-                    left: 35),
+                    left: 35
+                ),
                 child: Column(
                   children: [
+                    // Dropdown button
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade100,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.grey),
+                      ),
+                      child: DropdownButton<String>(
+                        value: defaultValue.isEmpty ? null : defaultValue,
+                        isExpanded: true,
+                        menuMaxHeight: 350,
+                        items: dropDownListData.map<DropdownMenuItem<String>>((item) {
+                          return DropdownMenuItem<String>(
+                            value: item['value'],
+                            child: Text(item['title']),
+                          );
+                        }).toList(),
+                        hint: Text("Select"),
+                        dropdownColor: Colors.grey.shade100,
+                        onChanged: (value) {
+                          setState(() {
+                            defaultValue = value!;
+                          });
+                          print("selected value $value");
+                        },
+                        underline: SizedBox(),
+                      ),
+                    ),
+                    SizedBox(height: 30),
                     TextField(
                       decoration: InputDecoration(
                           fillColor: Colors.grey.shade100,
@@ -44,9 +83,7 @@ class _MyRegisterState extends State<MyRegister> {
                           )
                       ),
                     ),
-                    SizedBox(
-                      height: 30,
-                    ),
+                    SizedBox(height: 30),
                     TextField(
                       decoration: InputDecoration(
                           fillColor: Colors.grey.shade100,

@@ -8,6 +8,13 @@ class MyForget extends StatefulWidget {
 }
 
 class _MyForgetState extends State<MyForget> {
+  // List of dropdown items
+  List dropDownListData = [
+    {"title": "Admin", "value": "1"},
+    {"title": "User", "value": "2"},
+  ];
+
+  String defaultValue = "";
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -32,13 +39,43 @@ class _MyForgetState extends State<MyForget> {
             SingleChildScrollView(
               child: Container(
                 padding: EdgeInsets.only(
-                  top: MediaQuery.of(context).size.height * 0.4,
-                  right: 35,
-                  left: 35,
+                    top: MediaQuery.of(context).size.height * 0.4,
+                    right: 35,
+                    left: 35
                 ),
                 child: Column(
                   children: [
-                    // Password TextField
+                    // Dropdown button
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade100,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.grey),
+                      ),
+                      child: DropdownButton<String>(
+                        value: defaultValue.isEmpty ? null : defaultValue,
+                        isExpanded: true,
+                        menuMaxHeight: 350,
+                        items: dropDownListData.map<DropdownMenuItem<String>>((item) {
+                          return DropdownMenuItem<String>(
+                            value: item['value'],
+                            child: Text(item['title']),
+                          );
+                        }).toList(),
+                        hint: Text("Select"),
+                        dropdownColor: Colors.grey.shade100,
+                        onChanged: (value) {
+                          setState(() {
+                            defaultValue = value!;
+                          });
+                          print("selected value $value");
+                        },
+                        underline: SizedBox(),
+                      ),
+                    ),
+                    SizedBox(height: 30),
+
                     TextField(
                       obscureText: true,
                       decoration: InputDecoration(
@@ -76,7 +113,7 @@ class _MyForgetState extends State<MyForget> {
                             'Sign In',
                             style: TextStyle(
                               decoration: TextDecoration.underline,
-                              fontSize: 18,
+                              fontSize: 20,
                               color: Color(0xFFE1E0E0),
                             ),
                           ),

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:newfutsal/display_screen/BookedScreen.dart';
+import 'package:newfutsal/edit_box/ChangePassword.dart'; // Import the ChangePassword screen
+import 'package:newfutsal/edit_box/EditProfile.dart';
 
 class UserProfile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
       appBar: AppBar(
         title: Text('User Profile'),
         backgroundColor: Colors.teal,
@@ -12,16 +14,25 @@ class UserProfile extends StatelessWidget {
           PopupMenuButton<String>(
             onSelected: (value) {
               // Handle the menu selection
-              if (value == 'Logout') {
+              if (value == 'Setting') {
                 // Logout logic
               } else if (value == 'Edit Profile') {
                 // Edit profile logic
-              } else if (value == 'Settings') {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => EditProfile()),
+                );
+              } else if (value == 'Change Password') {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ChangePassword()),
+                );
+              } else if (value == 'LogOut') {
                 // Settings logic
               }
             },
             itemBuilder: (BuildContext context) {
-              return {'Logout', 'Edit Profile', 'Settings'}
+              return {'Setting', 'Edit Profile', 'Change Password', 'LogOut'}
                   .map((String choice) {
                 return PopupMenuItem<String>(
                   value: choice,
@@ -36,52 +47,105 @@ class UserProfile extends StatelessWidget {
         padding: EdgeInsets.all(16.0),
         child: SingleChildScrollView(
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Center(
-                child: CircleAvatar(
-                  radius: 50,
-                  backgroundImage: AssetImage('assets/ceo.jpg'),
+              CircleAvatar(
+                radius: 50,
+                backgroundImage: AssetImage('assets/ceo.jpg'),
+              ),
+              SizedBox(height: 20),
+              Text(
+                'Demo User',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.teal,
                 ),
               ),
-              SizedBox(height: 20),
-              Center(
-                child: Text(
-                  'Demo User',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.teal,
-                  ),
-                ),
+              SizedBox(height: 10),
+              Text(
+                'DemoUser123@gmail.com',
+                style: TextStyle(fontSize: 16, color: Colors.black54),
+              ),
+              SizedBox(height: 5),
+              Text(
+                '+1234567890',
+                style: TextStyle(fontSize: 16, color: Colors.black54),
+              ),
+              SizedBox(height: 5),
+              Text(
+                'User',
+                style: TextStyle(fontSize: 16, color: Colors.black54),
               ),
               SizedBox(height: 20),
               Divider(),
-              ListTile(
-                leading: Icon(Icons.email, color: Colors.teal),
-                title: Text('Email'),
-                subtitle: Text('DemoUser123@gmail.com'),
-              ),
-              Divider(),
-              ListTile(
-                leading: Icon(Icons.phone, color: Colors.teal),
-                title: Text('Phone'),
-                subtitle: Text('+1234567890'),
-              ),
-              Divider(),
-              ListTile(
-                leading: Icon(Icons.person, color: Colors.teal),
-                title: Text('Role'),
-                subtitle: Text('Player'),
-              ),
-              Divider(),
-              SizedBox(height: 20),
               ElevatedButton.icon(
                 onPressed: () {
                   // Edit profile logic
                 },
-                icon: Icon(Icons.edit),
+                icon: Icon(Icons.settings),
+                label: Text('Setting'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white70,
+                  foregroundColor: Colors.teal,
+                  minimumSize: Size(double.infinity, 50), // Full width button
+                ),
+              ),
+              SizedBox(height: 10),
+              ElevatedButton.icon(
+                onPressed: () {
+                  // Edit profile logic
+                },
+                icon: Icon(Icons.settings_accessibility),
+                label: Text('Privacy & Safety'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white70,
+                  foregroundColor: Colors.teal,
+                  minimumSize: Size(double.infinity, 50), // Full width button
+                ),
+              ),
+              SizedBox(height: 10),
+              ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => BookedScreen()),
+                  );
+                },
+                icon: Icon(Icons.book_online),
+                label: Text('Booked'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white70,
+                  foregroundColor: Colors.teal,
+                  minimumSize: Size(double.infinity, 50), // Full width button
+                ),
+              ),
+              SizedBox(height: 10),
+              ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => EditProfile()),
+                  );
+                },
+                icon: Icon(Icons.edit_attributes_sharp),
                 label: Text('Edit Profile'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white70,
+                  foregroundColor: Colors.teal,
+                  minimumSize: Size(double.infinity, 50), // Full width button
+                ),
+              ),
+              SizedBox(height: 10),
+              ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => ChangePassword()),
+                  );
+                },
+                icon: Icon(Icons.edit),
+                label: Text('Change Password'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white70,
                   foregroundColor: Colors.teal,

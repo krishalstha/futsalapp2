@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:newfutsal/Authentication/LogIn.dart';
 import 'package:newfutsal/Authentication/Register.dart';
@@ -6,7 +7,12 @@ import 'package:newfutsal/display_screen/home.dart';
 import 'package:newfutsal/display_screen/booking_screen.dart';
 import 'package:newfutsal/display_screen/BookedScreen.dart';
 import 'package:newfutsal/display_screen/UserProfile.dart';
-void main() {
+import 'package:newfutsal/firebase_options.dart';
+Future<void> main() async {
+  //Todo: Initialize Firebase
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform);
+
   runApp(MaterialApp(
     debugShowCheckedModeBanner: false,
     initialRoute: 'LogIn',

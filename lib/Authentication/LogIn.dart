@@ -31,7 +31,7 @@ class _MyLogInState extends State<MyLogIn> {
             Container(
               child: Text(
                 'Kathmandu \nFutsal',
-                style: TextStyle(color: Colors.white, fontSize: 33),
+                style: TextStyle(color: Colors.black54, fontSize: 33),
               ),
             ),
             SingleChildScrollView(

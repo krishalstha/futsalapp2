@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:newfutsal/display_screen/BookedScreen.dart';
 
 class BookingScreen extends StatefulWidget {
   const BookingScreen({Key? key}) : super(key: key);
@@ -38,6 +39,21 @@ class _BookingScreenState extends State<BookingScreen> {
         selectedTime = picked;
       });
     }
+  }
+
+  void _bookCourt() {
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (context) => BookedScreen(),
+      settings: RouteSettings(
+        arguments: {
+          'selectedDate': selectedDate,
+          'selectedTime': selectedTime,
+          'selectedLength': selectedLength,
+          'selectedCourt': selectedCourt,
+          'selectedPaymentMethod': selectedPaymentMethod,
+        },
+      ),
+    ));
   }
 
   @override
@@ -130,10 +146,7 @@ class _BookingScreenState extends State<BookingScreen> {
             Spacer(),
             Center(
               child: ElevatedButton(
-                onPressed: () {
-                  // Perform booking action
-
-                },
+                onPressed: _bookCourt,
                 child: Text('Book Now'),
               ),
             ),
