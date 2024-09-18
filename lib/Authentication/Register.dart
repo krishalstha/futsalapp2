@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class MyRegister extends StatefulWidget {
   const MyRegister({super.key});
 
   @override
   State<MyRegister> createState() => _MyRegisterState();
-
 }
 
 class _MyRegisterState extends State<MyRegister> {
@@ -16,36 +16,42 @@ class _MyRegisterState extends State<MyRegister> {
   ];
 
   String defaultValue = "";
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _fullNameController = TextEditingController();
+
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.only(left: 30, top: 90),
-      decoration: BoxDecoration(
-          image: DecorationImage(image: AssetImage('assets/std.jpeg'), fit:BoxFit.cover)),
+      padding: const EdgeInsets.only(left: 30, top: 90),
+      decoration: const BoxDecoration(
+          image: DecorationImage(image: AssetImage('assets/std.jpeg'), fit: BoxFit.cover)),
       child: Scaffold(
-
         backgroundColor: Colors.transparent,
         body: Stack(
           children: [
-            Container(
-              child: Text(
+            Positioned(
+              top: 50,
+              left: 30,
+              child: const Text(
                 'Register Account',
                 style: TextStyle(color: Colors.white70, fontSize: 33),
               ),
             ),
-
             SingleChildScrollView(
               child: Container(
                 padding: EdgeInsets.only(
                     top: MediaQuery.of(context).size.height * 0.2,
                     right: 35,
-                    left: 35
-                ),
+                    left: 35),
                 child: Column(
                   children: [
                     // Dropdown button
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 12),
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
                       decoration: BoxDecoration(
                         color: Colors.grey.shade100,
                         borderRadius: BorderRadius.circular(10),
@@ -55,49 +61,46 @@ class _MyRegisterState extends State<MyRegister> {
                         value: defaultValue.isEmpty ? null : defaultValue,
                         isExpanded: true,
                         menuMaxHeight: 350,
-                        items: dropDownListData.map<DropdownMenuItem<String>>((item) {
+                        items: dropDownListData
+                            .map<DropdownMenuItem<String>>((item) {
                           return DropdownMenuItem<String>(
                             value: item['value'],
                             child: Text(item['title']),
                           );
                         }).toList(),
-                        hint: Text("Select"),
+                        hint: const Text("Select"),
                         dropdownColor: Colors.grey.shade100,
                         onChanged: (value) {
                           setState(() {
                             defaultValue = value!;
                           });
-                          print("selected value $value");
                         },
-                        underline: SizedBox(),
+                        underline: const SizedBox(),
                       ),
                     ),
-                    SizedBox(height: 30),
+                    const SizedBox(height: 30),
                     TextField(
+                      controller: _fullNameController,
                       decoration: InputDecoration(
                           fillColor: Colors.grey.shade100,
                           filled: true,
                           hintText: 'FullName',
                           border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10)
-                          )
-                      ),
+                              borderRadius: BorderRadius.circular(10))),
                     ),
-                    SizedBox(height: 30),
+                    const SizedBox(height: 30),
                     TextField(
+                      controller: _emailController,
                       decoration: InputDecoration(
                           fillColor: Colors.grey.shade100,
                           filled: true,
                           hintText: 'Email',
                           border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10)
-                          )
-                      ),
+                              borderRadius: BorderRadius.circular(10))),
                     ),
-                    SizedBox(
-                      height:30,
-                    ),
+                    const SizedBox(height: 30),
                     TextField(
+                      controller: _passwordController,
                       obscureText: true,
                       decoration: InputDecoration(
                           fillColor: Colors.grey.shade100,
@@ -106,10 +109,9 @@ class _MyRegisterState extends State<MyRegister> {
                           border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10))),
                     ),
-                    SizedBox(
-                      height:30,
-                    ),
+                    const SizedBox(height: 30),
                     TextField(
+                      controller: _confirmPasswordController,
                       obscureText: true,
                       decoration: InputDecoration(
                           fillColor: Colors.grey.shade100,
@@ -118,28 +120,29 @@ class _MyRegisterState extends State<MyRegister> {
                           border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10))),
                     ),
-                    SizedBox(
-                      height:30,
-                    ),
+                    const SizedBox(height: 30),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Sign Up', style: TextStyle(
-                            color: Color(0xFFE1E0E0),
-                            fontSize: 27, fontWeight: FontWeight.w700
+                        const Text(
+                          'Sign Up',
+                          style: TextStyle(
+                              color: Color(0xFFE1E0E0),
+                              fontSize: 27,
+                              fontWeight: FontWeight.w700),
                         ),
-                        ),
-                        CircleAvatar(radius: 30,
+                        CircleAvatar(
+                          radius: 30,
                           backgroundColor: Colors.teal,
                           child: IconButton(
                             color: Colors.white,
-                            onPressed: (){},
-                            icon: Icon(Icons.arrow_forward),
+                            onPressed: _registerAccount,
+                            icon: const Icon(Icons.arrow_forward),
                           ),
                         )
                       ],
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -147,7 +150,7 @@ class _MyRegisterState extends State<MyRegister> {
                           onPressed: () {
                             Navigator.pushNamed(context, 'LogIn');
                           },
-                          child: Text(
+                          child: const Text(
                             'Sign In',
                             style: TextStyle(
                               decoration: TextDecoration.underline,
@@ -156,10 +159,8 @@ class _MyRegisterState extends State<MyRegister> {
                             ),
                           ),
                         ),
-
                       ],
                     ),
-
                   ],
                 ),
               ),
@@ -167,7 +168,46 @@ class _MyRegisterState extends State<MyRegister> {
           ],
         ),
       ),
-
     );
+  }
+
+  void _registerAccount() async {
+    // Validate password matching
+    if (_passwordController.text != _confirmPasswordController.text) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Passwords do not match!'),
+      ));
+      return;
+    }
+
+    try {
+      // Create a new user account
+      final UserCredential userCredential =
+      await _auth.createUserWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+
+      print("User registered: ${userCredential.user!.email}");
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Registration Successful!'),
+      ));
+
+      // Navigate to login screen after successful registration
+      Navigator.pushNamed(context, 'LogIn');
+    } on FirebaseAuthException catch (e) {
+      String message = "An error occurred";
+      if (e.code == 'weak-password') {
+        message = 'The password provided is too weak.';
+      } else if (e.code == 'email-already-in-use') {
+        message = 'The account already exists for that email.';
+      } else if (e.code == 'invalid-email') {
+        message = 'The email address is not valid.';
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(message),
+      ));
+    }
   }
 }

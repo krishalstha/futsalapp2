@@ -41,47 +41,46 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyAFaGOtVhLwB_Qimgzd1_zgd1jOU2ai4YY',
-    appId: '1:353926578262:web:29fd506dfd074b4e4c7bf7',
-    messagingSenderId: '353926578262',
-    projectId: 'football-afe29',
-    authDomain: 'football-afe29.firebaseapp.com',
-    storageBucket: 'football-afe29.appspot.com',
+    apiKey: 'AIzaSyBa1p76NcZ__LGfV-eCfi_j4FS8vyWXZOw',
+    appId: '1:897354500756:web:bf0f67b0dec2ce48200281',
+    messagingSenderId: '897354500756',
+    projectId: 'futsal123-33644',
+    authDomain: 'futsal123-33644.firebaseapp.com',
+    storageBucket: 'futsal123-33644.appspot.com',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyBfh7VyQebTWUD_0A1Z8OBDDJAJIB_mmLY',
-    appId: '1:353926578262:android:f3d85268fa5d95284c7bf7',
-    messagingSenderId: '353926578262',
-    projectId: 'football-afe29',
-    storageBucket: 'football-afe29.appspot.com',
+    apiKey: 'AIzaSyDT-bN0nBL7jl1ktdZQ2GTjyIF3xPmyx2g',
+    appId: '1:897354500756:android:af78640703151e9d200281',
+    messagingSenderId: '897354500756',
+    projectId: 'futsal123-33644',
+    storageBucket: 'futsal123-33644.appspot.com',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyBQTWZec2MLLL6KsUZd4l5wSDN0ttkITcg',
-    appId: '1:774337897957:ios:ba5da9e710c49d76cf3b0c',
-    messagingSenderId: '774337897957',
-    projectId: 'futsalapp2',
-    storageBucket: 'futsalapp2.appspot.com',
+    apiKey: 'AIzaSyDV1Y5s7_XLhwB1ibIJdwnKcrHk3DJK_f0',
+    appId: '1:897354500756:ios:dee87e0f6908b8e2200281',
+    messagingSenderId: '897354500756',
+    projectId: 'futsal123-33644',
+    storageBucket: 'futsal123-33644.appspot.com',
+    iosBundleId: 'com.example.futsalapp2',
+  );
+
+  static const FirebaseOptions macos = FirebaseOptions(
+    apiKey: 'AIzaSyDV1Y5s7_XLhwB1ibIJdwnKcrHk3DJK_f0',
+    appId: '1:897354500756:ios:dee87e0f6908b8e2200281',
+    messagingSenderId: '897354500756',
+    projectId: 'futsal123-33644',
+    storageBucket: 'futsal123-33644.appspot.com',
     iosBundleId: 'com.example.futsalapp2',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyAFaGOtVhLwB_Qimgzd1_zgd1jOU2ai4YY',
-    appId: '1:353926578262:web:aeb9a5a81fc6f3264c7bf7',
-    messagingSenderId: '353926578262',
-    projectId: 'football-afe29',
-    authDomain: 'football-afe29.firebaseapp.com',
-    storageBucket: 'football-afe29.appspot.com',
+    apiKey: 'AIzaSyBa1p76NcZ__LGfV-eCfi_j4FS8vyWXZOw',
+    appId: '1:897354500756:web:1e97b71b3e579093200281',
+    messagingSenderId: '897354500756',
+    projectId: 'futsal123-33644',
+    authDomain: 'futsal123-33644.firebaseapp.com',
+    storageBucket: 'futsal123-33644.appspot.com',
   );
-
-  static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyBQTWZec2MLLL6KsUZd4l5wSDN0ttkITcg',
-    appId: '1:774337897957:ios:ba5da9e710c49d76cf3b0c',
-    messagingSenderId: '774337897957',
-    projectId: 'futsalapp2',
-    storageBucket: 'futsalapp2.appspot.com',
-    iosBundleId: 'com.example.futsalapp2',
-  );
-
 }
