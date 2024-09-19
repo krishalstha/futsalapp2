@@ -8,16 +8,21 @@ class UserProfile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('User Profile'),
+        title: Text(
+          'User Profile',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 24,
+            color: Colors.white,
+          ),
+        ),
         backgroundColor: Colors.teal,
         actions: [
           PopupMenuButton<String>(
             onSelected: (value) {
-              // Handle the menu selection
               if (value == 'Setting') {
-                // Logout logic
+                // Settings logic
               } else if (value == 'Edit Profile') {
-                // Edit profile logic
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => EditProfile()),
@@ -28,17 +33,52 @@ class UserProfile extends StatelessWidget {
                   MaterialPageRoute(builder: (context) => ChangePassword()),
                 );
               } else if (value == 'LogOut') {
-                // Settings logic
+                _showLogoutDialog(context); // Show logout confirmation dialog
               }
             },
             itemBuilder: (BuildContext context) {
-              return {'Setting', 'Edit Profile', 'Change Password', 'LogOut'}
-                  .map((String choice) {
-                return PopupMenuItem<String>(
-                  value: choice,
-                  child: Text(choice),
-                );
-              }).toList();
+              return [
+                PopupMenuItem(
+                  value: 'Setting',
+                  child: Row(
+                    children: [
+                      Icon(Icons.settings, color: Colors.teal),
+                      SizedBox(width: 10),
+                      Text('Setting'),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'Edit Profile',
+                  child: Row(
+                    children: [
+                      Icon(Icons.edit, color: Colors.teal),
+                      SizedBox(width: 10),
+                      Text('Edit Profile'),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'Change Password',
+                  child: Row(
+                    children: [
+                      Icon(Icons.lock, color: Colors.teal),
+                      SizedBox(width: 10),
+                      Text('Change Password'),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'LogOut',
+                  child: Row(
+                    children: [
+                      Icon(Icons.logout, color: Colors.red),
+                      SizedBox(width: 10),
+                      Text('LogOut'),
+                    ],
+                  ),
+                ),
+              ];
             },
           ),
         ],
@@ -50,14 +90,14 @@ class UserProfile extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               CircleAvatar(
-                radius: 50,
+                radius: 60,
                 backgroundImage: AssetImage('assets/ceo.jpg'),
               ),
               SizedBox(height: 20),
               Text(
                 'Demo User',
                 style: TextStyle(
-                  fontSize: 24,
+                  fontSize: 26,
                   fontWeight: FontWeight.bold,
                   color: Colors.teal,
                 ),
@@ -65,110 +105,146 @@ class UserProfile extends StatelessWidget {
               SizedBox(height: 10),
               Text(
                 'DemoUser123@gmail.com',
-                style: TextStyle(fontSize: 16, color: Colors.black54),
+                style: TextStyle(fontSize: 16, color: Colors.grey[700]),
               ),
               SizedBox(height: 5),
               Text(
                 '+1234567890',
-                style: TextStyle(fontSize: 16, color: Colors.black54),
-              ),
-              SizedBox(height: 5),
-              Text(
-                'User',
-                style: TextStyle(fontSize: 16, color: Colors.black54),
+                style: TextStyle(fontSize: 16, color: Colors.grey[700]),
               ),
               SizedBox(height: 20),
-              Divider(),
-              ElevatedButton.icon(
-                onPressed: () {
-                  // Edit profile logic
+              Divider(thickness: 1),
+              SizedBox(height: 20),
+              _buildProfileButton(
+                context,
+                icon: Icons.settings,
+                label: 'Settings',
+                onTap: () {
+                  // Navigate to settings
                 },
-                icon: Icon(Icons.settings),
-                label: Text('Setting'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white70,
-                  foregroundColor: Colors.teal,
-                  minimumSize: Size(double.infinity, 50), // Full width button
-                ),
               ),
-              SizedBox(height: 10),
-              ElevatedButton.icon(
-                onPressed: () {
-                  // Edit profile logic
+              _buildProfileButton(
+                context,
+                icon: Icons.security,
+                label: 'Privacy & Safety',
+                onTap: () {
+                  // Privacy & Safety logic
                 },
-                icon: Icon(Icons.settings_accessibility),
-                label: Text('Privacy & Safety'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white70,
-                  foregroundColor: Colors.teal,
-                  minimumSize: Size(double.infinity, 50), // Full width button
-                ),
               ),
-              SizedBox(height: 10),
-              ElevatedButton.icon(
-                onPressed: () {
+              _buildProfileButton(
+                context,
+                icon: Icons.book_online,
+                label: 'Booked',
+                onTap: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => BookedScreen()),
                   );
                 },
-                icon: Icon(Icons.book_online),
-                label: Text('Booked'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white70,
-                  foregroundColor: Colors.teal,
-                  minimumSize: Size(double.infinity, 50), // Full width button
-                ),
               ),
-              SizedBox(height: 10),
-              ElevatedButton.icon(
-                onPressed: () {
+              _buildProfileButton(
+                context,
+                icon: Icons.edit,
+                label: 'Edit Profile',
+                onTap: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => EditProfile()),
                   );
                 },
-                icon: Icon(Icons.edit_attributes_sharp),
-                label: Text('Edit Profile'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white70,
-                  foregroundColor: Colors.teal,
-                  minimumSize: Size(double.infinity, 50), // Full width button
-                ),
               ),
-              SizedBox(height: 10),
-              ElevatedButton.icon(
-                onPressed: () {
+              _buildProfileButton(
+                context,
+                icon: Icons.lock_outline,
+                label: 'Change Password',
+                onTap: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => ChangePassword()),
                   );
                 },
-                icon: Icon(Icons.edit),
-                label: Text('Change Password'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white70,
-                  foregroundColor: Colors.teal,
-                  minimumSize: Size(double.infinity, 50), // Full width button
-                ),
               ),
-              SizedBox(height: 10),
-              ElevatedButton.icon(
-                onPressed: () {
-                  // Logout logic
+              _buildProfileButton(
+                context,
+                icon: Icons.logout,
+                label: 'Logout',
+                onTap: () {
+                  _showLogoutDialog(context); // Show logout confirmation dialog
                 },
-                icon: Icon(Icons.logout),
-                label: Text('Logout'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white70,
-                  foregroundColor: Colors.red, // Text color
-                  minimumSize: Size(double.infinity, 50), // Full width button
-                ),
+                backgroundColor: Colors.redAccent,
+                iconColor: Colors.white,
+                textColor: Colors.white,
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  // Reusable method to build profile buttons
+  Widget _buildProfileButton(BuildContext context,
+      {required IconData icon,
+        required String label,
+        required VoidCallback onTap,
+        Color backgroundColor = Colors.white70,
+        Color iconColor = Colors.teal,
+        Color textColor = Colors.teal}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: ElevatedButton.icon(
+        onPressed: onTap,
+        icon: Icon(icon, color: iconColor),
+        label: Text(label, style: TextStyle(color: textColor, fontSize: 18)),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: backgroundColor,
+          minimumSize: Size(double.infinity, 50), // Full width button
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          side: BorderSide(color: Colors.teal, width: 1),
+        ),
+      ),
+    );
+  }
+
+  // Function to show logout confirmation dialog
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          title: Text(
+            'Logout',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.redAccent,
+            ),
+          ),
+          content: Text(
+            'Are you sure you want to log out?',
+            style: TextStyle(fontSize: 16),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: Text('No', style: TextStyle(color: Colors.teal)),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+                Navigator.pushReplacementNamed(context, 'LogIn'); // Navigate to LogIn page
+              },
+              child: Text('Yes', style: TextStyle(color: Colors.redAccent)),
+            ),
+          ],
+        );
+      },
     );
   }
 }
@@ -178,6 +254,7 @@ void main() {
     home: UserProfile(),
     theme: ThemeData(
       primarySwatch: Colors.teal,
+      fontFamily: 'Roboto',
     ),
   ));
 }

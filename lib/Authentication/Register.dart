@@ -193,8 +193,8 @@ class _MyRegisterState extends State<MyRegister> {
         content: Text('Registration Successful!'),
       ));
 
-      // Navigate to login screen after successful registration
-      Navigator.pushNamed(context, 'LogIn');
+      // Navigate directly to the home screen after successful registration
+      Navigator.pushReplacementNamed(context, 'home'); // Navigate to homepage directly
     } on FirebaseAuthException catch (e) {
       String message = "An error occurred";
       if (e.code == 'weak-password') {
