@@ -96,7 +96,7 @@ class _BookingScreenState extends State<BookingScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Book Futsal Court'),
-        backgroundColor: Colors.green[800],
+        backgroundColor: Colors.teal,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -268,7 +268,7 @@ class _BookingScreenState extends State<BookingScreen> {
         onPressed: _bookCourt,
         style: ElevatedButton.styleFrom(
           padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-          backgroundColor: Colors.blue[800],
+          backgroundColor: Colors.white,
         ),
         child: Text('Book Now', style: TextStyle(fontSize: 18)),
       ),

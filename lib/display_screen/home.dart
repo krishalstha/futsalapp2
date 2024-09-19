@@ -49,16 +49,26 @@ class _MyHomeState extends State<MyHome> {
         children: [
           Padding(
             padding: const EdgeInsets.all(16.0),
-            child: TextField(
-              decoration: InputDecoration(
-                hintText: 'Search',
-                prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30),
-                  borderSide: BorderSide.none,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.grey[200],
+                borderRadius: BorderRadius.circular(30),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.5),
+                    spreadRadius: 2,
+                    blurRadius: 8,
+                    offset: Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: TextField(
+                decoration: InputDecoration(
+                  hintText: 'Search futsal grounds',
+                  prefixIcon: Icon(Icons.search),
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.all(12),
                 ),
-                filled: true,
-                fillColor: Colors.grey[200],
               ),
             ),
           ),
@@ -74,37 +84,39 @@ class _MyHomeState extends State<MyHome> {
                   slots: 2,
                   imageUrl: 'assets/std.jpeg',
                 ),
+                SizedBox(height: 16),
                 FutsalCard(
-                  title: 'Kathmandu Futsal',
-                  location: 'Nayabazar - Rever Field , KATHMANDU',
+                  title: 'Bhaktapur Futsal',
+                  location: 'Nayabazar - Bahktapur Futsal , KATHMANDU',
                   rating: 4.0,
                   price: 500,
                   slots: 2,
                   imageUrl: 'assets/ground.jpeg',
                 ),
-
               ],
             ),
           ),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: Colors.white,
+        elevation: 10,
         currentIndex: _selectedIndex,
-        selectedItemColor: Colors.black,
-        unselectedItemColor: Colors.teal,
-        showUnselectedLabels: true,
+        selectedItemColor: Colors.teal,
+        unselectedItemColor: Colors.grey,
+        showUnselectedLabels: false,
         onTap: _onItemTapped,
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home),
+            icon: Icon(Icons.home_outlined),
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_today),
+            icon: Icon(Icons.calendar_today_outlined),
             label: 'Booked',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person),
+            icon: Icon(Icons.person_outline),
             label: 'Profile',
           ),
         ],
@@ -139,32 +151,74 @@ class FutsalCard extends StatelessWidget {
         ));
       },
       child: Card(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        elevation: 5,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ClipRRect(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
-              child: Image.asset(imageUrl, height: 250, width: double.infinity, fit: BoxFit.cover),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+              child: Image.asset(
+                imageUrl,
+                height: 200,
+                width: double.infinity,
+                fit: BoxFit.cover,
+              ),
             ),
             Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.all(12.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  Text(location, style: TextStyle(fontSize: 14, color: Colors.grey)),
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.teal[800],
+                    ),
+                  ),
+                  SizedBox(height: 5),
                   Row(
                     children: [
-                      Icon(Icons.star, color: Colors.yellow, size: 16),
-                      Text(rating.toString(), style: TextStyle(fontSize: 14)),
+                      Icon(Icons.location_on, color: Colors.grey[600], size: 16),
+                      SizedBox(width: 5),
+                      Text(
+                        location,
+                        style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                      ),
                     ],
                   ),
+                  SizedBox(height: 5),
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Rs${price}/hr', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                      Text('${slots} slots available', style: TextStyle(fontSize: 14, color: Colors.green)),
+                      Icon(Icons.star, color: Colors.amber, size: 16),
+                      SizedBox(width: 5),
+                      Text(
+                        rating.toString(),
+                        style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                      ),
+                      Spacer(),
+                      Text(
+                        'Rs $price/hr',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.teal[800],
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 5),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Text(
+                        '$slots slots available',
+                        style: TextStyle(fontSize: 14, color: Colors.green),
+                      ),
                     ],
                   ),
                 ],
