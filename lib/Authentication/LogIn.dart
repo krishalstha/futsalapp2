@@ -1,4 +1,3 @@
-// LogIn.dart
 import 'package:flutter/material.dart';
 
 class MyLogIn extends StatefulWidget {
@@ -9,7 +8,6 @@ class MyLogIn extends StatefulWidget {
 }
 
 class _MyLogInState extends State<MyLogIn> {
-  // List of dropdown items
   List dropDownListData = [
     {"title": "Admin", "value": "1"},
     {"title": "User", "value": "2"},
@@ -20,18 +18,23 @@ class _MyLogInState extends State<MyLogIn> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.only(left: 30, top: 100),
-      decoration: BoxDecoration(
-          image: DecorationImage(image: AssetImage('assets/ground.jpg'), fit: BoxFit.cover)
-      ),
+      padding: const EdgeInsets.only(left: 30, top: 100),
+      decoration: const BoxDecoration(
+          image: DecorationImage(
+              image: AssetImage('assets/ground.jpg'), fit: BoxFit.cover)),
       child: Scaffold(
         backgroundColor: Colors.transparent,
         body: Stack(
           children: [
-            Container(
-              child: Text(
+            Positioned(
+              top: 50,
+              left: 30,
+              child: const Text(
                 'Kathmandu \nFutsal',
-                style: TextStyle(color: Colors.black54, fontSize: 33),
+                style: TextStyle(
+                    color: Colors.black87,
+                    fontSize: 36,
+                    fontWeight: FontWeight.bold),
               ),
             ),
             SingleChildScrollView(
@@ -39,91 +42,71 @@ class _MyLogInState extends State<MyLogIn> {
                 padding: EdgeInsets.only(
                     top: MediaQuery.of(context).size.height * 0.4,
                     right: 35,
-                    left: 35
-                ),
+                    left: 35),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Dropdown button
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 12),
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: Colors.grey),
+                        color: Colors.grey.shade200.withOpacity(0.9),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.grey.shade400),
                       ),
                       child: DropdownButton<String>(
                         value: defaultValue.isEmpty ? null : defaultValue,
                         isExpanded: true,
                         menuMaxHeight: 350,
-                        items: dropDownListData.map<DropdownMenuItem<String>>((item) {
+                        items: dropDownListData
+                            .map<DropdownMenuItem<String>>((item) {
                           return DropdownMenuItem<String>(
                             value: item['value'],
                             child: Text(item['title']),
                           );
                         }).toList(),
-                        hint: Text("Select"),
+                        hint: const Text("Select Role"),
                         dropdownColor: Colors.grey.shade100,
                         onChanged: (value) {
                           setState(() {
                             defaultValue = value!;
                           });
-                          print("selected value $value");
                         },
-                        underline: SizedBox(),
+                        underline: const SizedBox(),
                       ),
                     ),
-                    SizedBox(height: 30),
+                    const SizedBox(height: 30),
                     // Email TextField
-                    TextField(
-                      decoration: InputDecoration(
-                          fillColor: Colors.grey.shade100,
-                          filled: true,
-                          hintText: 'Email',
-                          border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10)
-                          )
-                      ),
-                    ),
-                    SizedBox(height: 30),
+                    _buildTextField('Email', false),
+                    const SizedBox(height: 30),
                     // Password TextField
-                    TextField(
-                      obscureText: true,
-                      decoration: InputDecoration(
-                          fillColor: Colors.grey.shade100,
-                          filled: true,
-                          hintText: 'Password',
-                          border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10)
-                          )
-                      ),
-                    ),
-                    SizedBox(height: 20),
+                    _buildTextField('Password', true),
+                    const SizedBox(height: 30),
                     // Sign In Row
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
+                        const Text(
                           'Sign In',
                           style: TextStyle(
-                              color: Color(0xFFE1E0E0),
+                              color: Colors.white70,
                               fontSize: 27,
-                              fontWeight: FontWeight.w700
-                          ),
+                              fontWeight: FontWeight.bold),
                         ),
                         CircleAvatar(
                           radius: 30,
-                          backgroundColor: Colors.teal,
+                          backgroundColor: Colors.tealAccent.shade700,
                           child: IconButton(
                             color: Colors.white,
                             onPressed: () {
                               Navigator.pushNamed(context, 'home'); // Ensure the route name matches
                             },
-                            icon: Icon(Icons.arrow_forward),
+                            icon: const Icon(Icons.arrow_forward),
                           ),
                         )
                       ],
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 15),
                     // Sign Up and Forget Password Row
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -132,12 +115,12 @@ class _MyLogInState extends State<MyLogIn> {
                           onPressed: () {
                             Navigator.pushNamed(context, 'Register');
                           },
-                          child: Text(
+                          child: const Text(
                             'Sign Up',
                             style: TextStyle(
                               decoration: TextDecoration.underline,
                               fontSize: 20,
-                              color: Color(0xFFE1E0E0),
+                              color: Colors.tealAccent,
                             ),
                           ),
                         ),
@@ -145,23 +128,36 @@ class _MyLogInState extends State<MyLogIn> {
                           onPressed: () {
                             Navigator.pushNamed(context, 'Forget'); // Ensure the route name matches
                           },
-                          child: Text(
+                          child: const Text(
                             'Forget Password?',
                             style: TextStyle(
                               decoration: TextDecoration.underline,
                               fontSize: 20,
-                              color: Color(0xFFE1E0E0),
+                              color: Colors.tealAccent,
                             ),
                           ),
                         ),
                       ],
                     ),
-
                   ],
                 ),
               ),
             )
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField(String hintText, bool isPassword) {
+    return TextField(
+      obscureText: isPassword,
+      decoration: InputDecoration(
+        fillColor: Colors.grey.shade200.withOpacity(0.9),
+        filled: true,
+        hintText: hintText,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
         ),
       ),
     );
