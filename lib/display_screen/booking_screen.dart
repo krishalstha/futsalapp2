@@ -15,6 +15,7 @@ class _BookingScreenState extends State<BookingScreen> {
   int selectedLength = 60;
   int selectedCourt = 2;
   String selectedPaymentMethod = 'Credit card';
+  bool isBooking = false; // To prevent multiple submissions
 
   // Function to select the date
   void _selectDate() async {
@@ -46,22 +47,27 @@ class _BookingScreenState extends State<BookingScreen> {
 
   // Function to book the court and save booking info in Firestore
   void _bookCourt() async {
-    // Save booking data to Firestore
-    CollectionReference bookings = FirebaseFirestore.instance.collection('bookingcort');
+    if (isBooking) return; // Prevent multiple submissions
+    setState(() {
+      isBooking = true;
+    });
 
-    await bookings.add({
-      'selectedDate': selectedDate,
-      'selectedTime': '${selectedTime.hour}:${selectedTime.minute}',
-      'selectedLength': selectedLength,
-      'selectedCourt': selectedCourt,
-      'selectedPaymentMethod': selectedPaymentMethod,
-      'location': 'Kathmandu',
-      'futsal': 'ReaverField Futsal'
-    }).then((value) {
-      print("Booking Added");
+    try {
+      // Save booking data to Firestore
+      CollectionReference bookings = FirebaseFirestore.instance.collection('bookingcort');
+
+      await bookings.add({
+        'selectedDate': selectedDate.toIso8601String(),
+        'selectedTime': '${selectedTime.hour}:${selectedTime.minute}',
+        'selectedLength': selectedLength,
+        'selectedCourt': selectedCourt,
+        'selectedPaymentMethod': selectedPaymentMethod,
+        'location': 'Kathmandu',
+        'futsal': 'ReaverField Futsal'
+      });
 
       // Navigate to BookedScreen after saving the data
-      Navigator.of(context).push(MaterialPageRoute(
+      Navigator.of(context).pushReplacement(MaterialPageRoute(
         builder: (context) => BookedScreen(),
         settings: RouteSettings(
           arguments: {
@@ -73,12 +79,16 @@ class _BookingScreenState extends State<BookingScreen> {
           },
         ),
       ));
-    }).catchError((error) {
+    } catch (error) {
       print("Failed to add booking: $error");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to book the court. Please try again.')),
       );
-    });
+    } finally {
+      setState(() {
+        isBooking = false; // Allow further bookings
+      });
+    }
   }
 
   @override
