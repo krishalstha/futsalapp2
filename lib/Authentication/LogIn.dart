@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class MyLogIn extends StatefulWidget {
   const MyLogIn({Key? key}) : super(key: key);
@@ -14,6 +15,10 @@ class _MyLogInState extends State<MyLogIn> {
   ];
 
   String defaultValue = "";
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   @override
   Widget build(BuildContext context) {
@@ -77,10 +82,10 @@ class _MyLogInState extends State<MyLogIn> {
                     ),
                     const SizedBox(height: 30),
                     // Email TextField
-                    _buildTextField('Email', false),
+                    _buildTextField('Email', false, _emailController),
                     const SizedBox(height: 30),
                     // Password TextField
-                    _buildTextField('Password', true),
+                    _buildTextField('Password', true, _passwordController),
                     const SizedBox(height: 30),
                     // Sign In Row
                     Row(
@@ -98,9 +103,7 @@ class _MyLogInState extends State<MyLogIn> {
                           backgroundColor: Colors.tealAccent.shade700,
                           child: IconButton(
                             color: Colors.white,
-                            onPressed: () {
-                              Navigator.pushNamed(context, 'home'); // Ensure the route name matches
-                            },
+                            onPressed: _login,
                             icon: const Icon(Icons.arrow_forward),
                           ),
                         )
@@ -126,7 +129,7 @@ class _MyLogInState extends State<MyLogIn> {
                         ),
                         TextButton(
                           onPressed: () {
-                            Navigator.pushNamed(context, 'Forget'); // Ensure the route name matches
+                            Navigator.pushNamed(context, 'Forget');
                           },
                           child: const Text(
                             'Forget Password?',
@@ -149,8 +152,9 @@ class _MyLogInState extends State<MyLogIn> {
     );
   }
 
-  Widget _buildTextField(String hintText, bool isPassword) {
+  Widget _buildTextField(String hintText, bool isPassword, TextEditingController controller) {
     return TextField(
+      controller: controller,
       obscureText: isPassword,
       decoration: InputDecoration(
         fillColor: Colors.grey.shade200.withOpacity(0.9),
@@ -161,5 +165,32 @@ class _MyLogInState extends State<MyLogIn> {
         ),
       ),
     );
+  }
+
+  void _login() async {
+    try {
+      // Authenticate the user
+      final UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+
+      if (userCredential.user != null) {
+        // Navigate to home after successful login
+        Navigator.pushReplacementNamed(context, 'home');
+      }
+    } on FirebaseAuthException catch (e) {
+      String errorMessage = 'Please Login First';
+      if (e.code == 'user-not-found') {
+        errorMessage = 'No user found for that email.';
+      } else if (e.code == 'wrong-password') {
+        errorMessage = 'Wrong password provided.';
+      }
+
+      // Show the error message
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(errorMessage),
+      ));
+    }
   }
 }
