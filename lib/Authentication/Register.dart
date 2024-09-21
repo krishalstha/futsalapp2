@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class MyRegister extends StatefulWidget {
   const MyRegister({super.key});
@@ -9,7 +10,6 @@ class MyRegister extends StatefulWidget {
 }
 
 class _MyRegisterState extends State<MyRegister> {
-  // List of dropdown items
   List dropDownListData = [
     {"title": "Admin", "value": "1"},
     {"title": "User", "value": "2"},
@@ -22,6 +22,7 @@ class _MyRegisterState extends State<MyRegister> {
   final TextEditingController _fullNameController = TextEditingController();
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +50,6 @@ class _MyRegisterState extends State<MyRegister> {
                     left: 35),
                 child: Column(
                   children: [
-                    // Dropdown button
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       decoration: BoxDecoration(
@@ -84,7 +84,7 @@ class _MyRegisterState extends State<MyRegister> {
                       decoration: InputDecoration(
                           fillColor: Colors.grey.shade100,
                           filled: true,
-                          hintText: 'FullName',
+                          hintText: 'Full Name',
                           border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10))),
                     ),
@@ -116,7 +116,7 @@ class _MyRegisterState extends State<MyRegister> {
                       decoration: InputDecoration(
                           fillColor: Colors.grey.shade100,
                           filled: true,
-                          hintText: 'ConfirmPassword',
+                          hintText: 'Confirm Password',
                           border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10))),
                     ),
@@ -172,7 +172,6 @@ class _MyRegisterState extends State<MyRegister> {
   }
 
   void _registerAccount() async {
-    // Validate password matching
     if (_passwordController.text != _confirmPasswordController.text) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content: Text('Passwords do not match!'),
@@ -181,20 +180,28 @@ class _MyRegisterState extends State<MyRegister> {
     }
 
     try {
-      // Create a new user account
       final UserCredential userCredential =
       await _auth.createUserWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
 
+      // Get user ID
+      String userId = userCredential.user!.uid;
+
+      // Save user data to Firestore
+      await _firestore.collection('users').doc(userId).set({
+        'email': _emailController.text.trim(),
+        'fullName': _fullNameController.text.trim(),
+        'role': defaultValue, // Assuming you want to save the user's role
+      });
+
       print("User registered: ${userCredential.user!.email}");
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content: Text('Registration Successful!'),
       ));
 
-      // Navigate directly to the home screen after successful registration
-      Navigator.pushReplacementNamed(context, 'home'); // Navigate to homepage directly
+      Navigator.pushReplacementNamed(context, 'home');
     } on FirebaseAuthException catch (e) {
       String message = "An error occurred";
       if (e.code == 'weak-password') {

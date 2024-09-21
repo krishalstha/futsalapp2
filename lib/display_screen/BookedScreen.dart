@@ -48,7 +48,7 @@ class _BookedScreenState extends State<BookedScreen> {
     String selectedPaymentMethod = arguments['selectedPaymentMethod'] ?? 'Unknown';
 
     return Scaffold(
-      appBar: CustomAppBar(title: 'Booking Details', showLeading: true),
+      appBar: CustomAppBar(showLeading: true),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -128,7 +128,7 @@ class _BookedScreenState extends State<BookedScreen> {
                 },
                 child: Text('Back to Home'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white, // Updated to backgroundColor
+                  backgroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),

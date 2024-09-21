@@ -1,11 +1,43 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
-  final String title;
   final bool showLeading;
 
-  CustomAppBar({required this.title, this.showLeading = true});
+  CustomAppBar({this.showLeading = true});
+
+  // Fetch the user's full name from Firestore based on the logged-in user's UID
+  Future<String> _getUserName() async {
+    try {
+      User? user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        // Debug: Print user UID
+        print('User UID: ${user.uid}');
+
+        // Fetch user details from Firestore
+        var snapshot = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid) // Ensure correct UID
+            .get();
+
+        // Check if the user data exists
+        if (snapshot.exists) {
+          // Debug: Print full name from Firestore
+          print('User Full Name: ${snapshot.data()?['fullName']}');
+
+          return snapshot.data()?['fullName'] ?? 'User'; // Make sure 'fullName' is the correct field
+        } else {
+          print('User document does not exist in Firestore.');
+        }
+      } else {
+        print('User not logged in.');
+      }
+    } catch (e) {
+      print('Error fetching user name: $e');
+    }
+    return 'User';
+  }
 
   Future<int> _getNotificationCount() async {
     // Fetch the notification count from Firestore
@@ -31,14 +63,21 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
         ),
       )
           : null,
-      title: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Hello,', style: TextStyle(fontSize: 16, color: Colors.white)),
-          Text('Demo User',
-              style: TextStyle(
-                  fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
-        ],
+      title: FutureBuilder<String>(
+        future: _getUserName(),
+        builder: (context, snapshot) {
+          // Use default name if data is null or fetching fails
+          String userName = snapshot.data ?? 'User';
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Hello,', style: TextStyle(fontSize: 16, color: Colors.white)),
+              Text(userName,
+                  style: TextStyle(
+                      fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
+            ],
+          );
+        },
       ),
       actions: [
         FutureBuilder<int>(
@@ -106,7 +145,6 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
               Text('Notifications', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
               SizedBox(height: 16),
               // Fetch and display notifications here
-              // Example placeholder:
               Text('You have new notifications.'),
             ],
           ),

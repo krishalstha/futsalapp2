@@ -1,9 +1,88 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:newfutsal/display_screen/BookedScreen.dart';
-import 'package:newfutsal/edit_box/ChangePassword.dart'; // Import the ChangePassword screen
+import 'package:newfutsal/edit_box/ChangePassword.dart';
 import 'package:newfutsal/edit_box/EditProfile.dart';
 
-class UserProfile extends StatelessWidget {
+class UserProfile extends StatefulWidget {
+  @override
+  _UserProfileState createState() => _UserProfileState();
+}
+
+class _UserProfileState extends State<UserProfile> {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  String _fullName = 'Loading...';
+  String _email = 'Loading...';
+  // String _phoneNumber = 'Loading...';
+
+  int _selectedIndex = 0; // Track selected tab
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserData();
+  }
+
+  Future<void> _fetchUserData() async {
+    User? user = _auth.currentUser;
+
+    if (user != null) {
+      String userId = user.uid;
+
+      try {
+        DocumentSnapshot userDoc = await _firestore.collection('users').doc(userId).get();
+
+        if (userDoc.exists) {
+          setState(() {
+            _fullName = userDoc['fullName'] ?? 'User';
+            _email = userDoc['email'] ?? 'Email';
+            // _phoneNumber = userDoc['phoneNumber'] ?? 'Phone Number';
+          });
+        } else {
+          setState(() {
+            _fullName = 'User';
+            _email = 'Email';
+            // _phoneNumber = 'Phone Number';
+          });
+        }
+      } catch (e) {
+        setState(() {
+          _fullName = 'Error fetching data';
+          _email = 'Error fetching data';
+          // _phoneNumber = 'Error fetching data';
+        });
+      }
+    } else {
+      setState(() {
+        _fullName = 'No User';
+        _email = 'No User';
+        // _phoneNumber = 'No User';
+      });
+    }
+  }
+
+  // Method to handle navigation when a tab is tapped
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+
+    if (_selectedIndex == 0) {
+      // Navigate to Home
+      Navigator.pushNamed(context, '/home');
+    } else if (_selectedIndex == 1) {
+      // Navigate to Booked
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => BookedScreen()),
+      );
+    } else if (_selectedIndex == 2) {
+      // Navigate to Profile (already here, so no need to navigate)
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -33,7 +112,7 @@ class UserProfile extends StatelessWidget {
                   MaterialPageRoute(builder: (context) => ChangePassword()),
                 );
               } else if (value == 'LogOut') {
-                _showLogoutDialog(context); // Show logout confirmation dialog
+                _showLogoutDialog(context);
               }
             },
             itemBuilder: (BuildContext context) {
@@ -95,7 +174,7 @@ class UserProfile extends StatelessWidget {
               ),
               SizedBox(height: 20),
               Text(
-                'Demo User',
+                _fullName,
                 style: TextStyle(
                   fontSize: 26,
                   fontWeight: FontWeight.bold,
@@ -104,15 +183,15 @@ class UserProfile extends StatelessWidget {
               ),
               SizedBox(height: 10),
               Text(
-                'DemoUser123@gmail.com',
+                _email,
                 style: TextStyle(fontSize: 16, color: Colors.grey[700]),
               ),
               SizedBox(height: 5),
-              Text(
-                '+1234567890',
-                style: TextStyle(fontSize: 16, color: Colors.grey[700]),
-              ),
-              SizedBox(height: 20),
+              // Text(
+              //   _phoneNumber,
+              //   style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+              // ),
+              // SizedBox(height: 20),
               Divider(thickness: 1),
               SizedBox(height: 20),
               _buildProfileButton(
@@ -123,14 +202,7 @@ class UserProfile extends StatelessWidget {
                   // Navigate to settings
                 },
               ),
-              _buildProfileButton(
-                context,
-                icon: Icons.security,
-                label: 'Privacy & Safety',
-                onTap: () {
-                  // Privacy & Safety logic
-                },
-              ),
+
               _buildProfileButton(
                 context,
                 icon: Icons.book_online,
@@ -169,7 +241,7 @@ class UserProfile extends StatelessWidget {
                 icon: Icons.logout,
                 label: 'Logout',
                 onTap: () {
-                  _showLogoutDialog(context); // Show logout confirmation dialog
+                  _showLogoutDialog(context);
                 },
                 backgroundColor: Colors.redAccent,
                 iconColor: Colors.white,
@@ -179,10 +251,32 @@ class UserProfile extends StatelessWidget {
           ),
         ),
       ),
+      bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: Colors.white,
+        elevation: 10,
+        currentIndex: _selectedIndex,
+        selectedItemColor: Colors.teal,
+        unselectedItemColor: Colors.grey,
+        showUnselectedLabels: false,
+        onTap: _onItemTapped,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home_outlined),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.calendar_today_outlined),
+            label: 'Booked',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline),
+            label: 'Profile',
+          ),
+        ],
+      ),
     );
   }
 
-  // Reusable method to build profile buttons
   Widget _buildProfileButton(BuildContext context,
       {required IconData icon,
         required String label,
@@ -198,7 +292,7 @@ class UserProfile extends StatelessWidget {
         label: Text(label, style: TextStyle(color: textColor, fontSize: 18)),
         style: ElevatedButton.styleFrom(
           backgroundColor: backgroundColor,
-          minimumSize: Size(double.infinity, 50), // Full width button
+          minimumSize: Size(double.infinity, 50),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -208,7 +302,6 @@ class UserProfile extends StatelessWidget {
     );
   }
 
-  // Function to show logout confirmation dialog
   void _showLogoutDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -231,14 +324,14 @@ class UserProfile extends StatelessWidget {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
+                Navigator.of(context).pop();
               },
               child: Text('No', style: TextStyle(color: Colors.teal)),
             ),
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
-                Navigator.pushReplacementNamed(context, 'LogIn'); // Navigate to LogIn page
+                Navigator.of(context).pop();
+                Navigator.pushReplacementNamed(context, 'LogIn');
               },
               child: Text('Yes', style: TextStyle(color: Colors.redAccent)),
             ),
@@ -247,14 +340,4 @@ class UserProfile extends StatelessWidget {
       },
     );
   }
-}
-
-void main() {
-  runApp(MaterialApp(
-    home: UserProfile(),
-    theme: ThemeData(
-      primarySwatch: Colors.teal,
-      fontFamily: 'Roboto',
-    ),
-  ));
 }

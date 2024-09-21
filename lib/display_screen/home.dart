@@ -21,10 +21,7 @@ class _MyHomeState extends State<MyHome> {
 
     switch (index) {
       case 0:
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => MyHome()),
-        );
+      // Stay on the home page
         break;
       case 1:
         Navigator.push(
@@ -44,7 +41,7 @@ class _MyHomeState extends State<MyHome> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(title: 'Home', showLeading: true),
+      appBar: CustomAppBar(showLeading: true),
       body: Column(
         children: [
           Padding(
@@ -87,7 +84,7 @@ class _MyHomeState extends State<MyHome> {
                 SizedBox(height: 16),
                 FutsalCard(
                   title: 'Bhaktapur Futsal',
-                  location: 'Nayabazar - Bahktapur Futsal , KATHMANDU',
+                  location: 'Nayabazar - Bhaktapur Futsal , KATHMANDU',
                   rating: 4.0,
                   price: 500,
                   slots: 2,
