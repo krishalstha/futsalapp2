@@ -29,7 +29,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: MyLogIn(), // Always show Login screen first
+      initialRoute: 'LogIn',
       routes: {
         'LogIn': (context) => MyLogIn(),
         'Register': (context) => MyRegister(),

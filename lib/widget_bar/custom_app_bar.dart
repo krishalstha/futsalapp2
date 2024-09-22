@@ -7,31 +7,18 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   CustomAppBar({this.showLeading = true});
 
-  // Fetch the user's full name from Firestore based on the logged-in user's UID
   Future<String> _getUserName() async {
     try {
       User? user = FirebaseAuth.instance.currentUser;
       if (user != null) {
-        // Debug: Print user UID
-        print('User UID: ${user.uid}');
-
-        // Fetch user details from Firestore
         var snapshot = await FirebaseFirestore.instance
             .collection('users')
-            .doc(user.uid) // Ensure correct UID
+            .doc(user.uid)
             .get();
 
-        // Check if the user data exists
         if (snapshot.exists) {
-          // Debug: Print full name from Firestore
-          print('User Full Name: ${snapshot.data()?['fullName']}');
-
-          return snapshot.data()?['fullName'] ?? 'User'; // Make sure 'fullName' is the correct field
-        } else {
-          print('User document does not exist in Firestore.');
+          return snapshot.data()?['fullName'] ?? 'User';
         }
-      } else {
-        print('User not logged in.');
       }
     } catch (e) {
       print('Error fetching user name: $e');
@@ -40,10 +27,9 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   }
 
   Future<int> _getNotificationCount() async {
-    // Fetch the notification count from Firestore
     var snapshot = await FirebaseFirestore.instance
-        .collection('notifications') // Replace with your collection name
-        .where('read', isEqualTo: false) // Assuming there's a 'read' field
+        .collection('notifications')
+        .where('read', isEqualTo: false)
         .get();
     return snapshot.size;
   }
@@ -66,7 +52,6 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       title: FutureBuilder<String>(
         future: _getUserName(),
         builder: (context, snapshot) {
-          // Use default name if data is null or fetching fails
           String userName = snapshot.data ?? 'User';
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -144,7 +129,6 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
             children: [
               Text('Notifications', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
               SizedBox(height: 16),
-              // Fetch and display notifications here
               Text('You have new notifications.'),
             ],
           ),

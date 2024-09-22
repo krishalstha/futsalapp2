@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:newfutsal/display_screen/BookedScreen.dart';
 
 class BookingScreen extends StatefulWidget {
@@ -15,9 +16,8 @@ class _BookingScreenState extends State<BookingScreen> {
   int selectedLength = 60;
   int selectedCourt = 2;
   String selectedPaymentMethod = 'Credit card';
-  bool isBooking = false; // To prevent multiple submissions
+  bool isBooking = false;
 
-  // Function to select the date
   void _selectDate() async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -32,7 +32,6 @@ class _BookingScreenState extends State<BookingScreen> {
     }
   }
 
-  // Function to select the time
   void _selectTime() async {
     final TimeOfDay? picked = await showTimePicker(
       context: context,
@@ -45,34 +44,50 @@ class _BookingScreenState extends State<BookingScreen> {
     }
   }
 
-  // Function to book the court and save booking info in Firestore
   void _bookCourt() async {
-    if (isBooking) return; // Prevent multiple submissions
+    if (isBooking) return;
     setState(() {
       isBooking = true;
     });
 
     try {
-      // Save booking data to Firestore
+      User? currentUser = FirebaseAuth.instance.currentUser;
+
+      if (currentUser == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('You need to be logged in to book a court.')),
+        );
+        setState(() {
+          isBooking = false;
+        });
+        return;
+      }
+
       CollectionReference bookings = FirebaseFirestore.instance.collection('bookingcort');
 
       await bookings.add({
+        'userId': currentUser.uid,
         'selectedDate': selectedDate.toIso8601String(),
         'selectedTime': '${selectedTime.hour}:${selectedTime.minute}',
         'selectedLength': selectedLength,
         'selectedCourt': selectedCourt,
         'selectedPaymentMethod': selectedPaymentMethod,
         'location': 'Kathmandu',
-        'futsal': 'ReaverField Futsal'
+        'futsal': 'ReaverField Futsal',
       });
 
-      // Navigate to BookedScreen after saving the data
+      // Fetch user's full name
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(currentUser.uid).get();
+      String fullName = (userDoc.data() as Map<String, dynamic>)['fullName'] ?? 'N/A';
+
+      // Navigate to BookedScreen with arguments
       Navigator.of(context).pushReplacement(MaterialPageRoute(
         builder: (context) => BookedScreen(),
         settings: RouteSettings(
           arguments: {
-            'selectedDate': selectedDate,
-            'selectedTime': selectedTime,
+            'fullName': fullName,
+            'selectedDate': selectedDate.toLocal(), // Convert to local DateTime
+            'selectedTime': selectedTime, // Pass as TimeOfDay
             'selectedLength': selectedLength,
             'selectedCourt': selectedCourt,
             'selectedPaymentMethod': selectedPaymentMethod,
@@ -86,7 +101,7 @@ class _BookingScreenState extends State<BookingScreen> {
       );
     } finally {
       setState(() {
-        isBooking = false; // Allow further bookings
+        isBooking = false;
       });
     }
   }
@@ -124,7 +139,6 @@ class _BookingScreenState extends State<BookingScreen> {
     );
   }
 
-  // Header section showing the futsal information
   Widget _buildHeaderSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -135,7 +149,6 @@ class _BookingScreenState extends State<BookingScreen> {
     );
   }
 
-  // Date selection
   Widget _buildDateSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -156,7 +169,6 @@ class _BookingScreenState extends State<BookingScreen> {
     );
   }
 
-  // Time selection
   Widget _buildTimeSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -177,7 +189,6 @@ class _BookingScreenState extends State<BookingScreen> {
     );
   }
 
-  // Duration (game length) selection
   Widget _buildDurationSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -209,7 +220,6 @@ class _BookingScreenState extends State<BookingScreen> {
     );
   }
 
-  // Court selection (dropdown)
   Widget _buildCourtSelection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -235,7 +245,6 @@ class _BookingScreenState extends State<BookingScreen> {
     );
   }
 
-  // Payment method (dropdown)
   Widget _buildPaymentMethod() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -261,14 +270,13 @@ class _BookingScreenState extends State<BookingScreen> {
     );
   }
 
-  // Book button at the bottom
   Widget _buildBookButton() {
     return Center(
       child: ElevatedButton(
         onPressed: _bookCourt,
         style: ElevatedButton.styleFrom(
           padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-          backgroundColor: Colors.white,
+          backgroundColor: Colors.teal,
         ),
         child: Text('Book Now', style: TextStyle(fontSize: 18)),
       ),
