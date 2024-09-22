@@ -19,7 +19,6 @@ Future<void> main() async {
     );
   } catch (e) {
     print('Failed to initialize Firebase: $e');
-    // Optionally handle the error by showing an error screen or message
   }
 
   runApp(MyApp());
@@ -30,7 +29,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: AuthWrapper(), // Check authentication state on app start
+      home: MyLogIn(), // Always show Login screen first
       routes: {
         'LogIn': (context) => MyLogIn(),
         'Register': (context) => MyRegister(),
@@ -44,33 +43,6 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.teal,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-    );
-  }
-}
-
-// Wrapper to check if the user is already logged in
-class AuthWrapper extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return StreamBuilder<User?>(
-      stream: FirebaseAuth.instance.authStateChanges(),
-      builder: (context, snapshot) {
-        // If user is logged in, navigate to home page
-        if (snapshot.connectionState == ConnectionState.active) {
-          User? user = snapshot.data;
-
-          if (user == null) {
-            // If user is not logged in, navigate to login screen
-            return MyLogIn();
-          } else {
-            // If user is logged in, navigate to home
-            return MyHome();
-          }
-        } else {
-          // While waiting for connection, show a loading screen
-          return const Center(child: CircularProgressIndicator());
-        }
-      },
     );
   }
 }
