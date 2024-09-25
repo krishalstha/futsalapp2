@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:newfutsal/display_screen/BookedScreen.dart';
+import 'BookedScreen.dart';// Update this with the actual path
 
 class BookingScreen extends StatefulWidget {
   const BookingScreen({Key? key}) : super(key: key);
@@ -76,26 +76,41 @@ class _BookingScreenState extends State<BookingScreen> {
         'futsal': 'ReaverField Futsal',
       });
 
-      // Fetch user's full name
-      DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(currentUser.uid).get();
-      String fullName = (userDoc.data() as Map<String, dynamic>)['fullName'] ?? 'N/A';
+      // Show confirmation dialog
+      bool? viewVenue = await showDialog<bool>(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Booking Successful'),
+            content: Text('Court booked successfully! Do you want to view the venue?'),
+            actions: <Widget>[
+              TextButton(
+                child: Text('No'),
+                onPressed: () {
+                  Navigator.of(context).pop(false);
+                },
+              ),
+              TextButton(
+                child: Text('Yes'),
+                onPressed: () {
+                  Navigator.of(context).pop(true);
+                },
+              ),
+            ],
+          );
+        },
+      );
 
-      // Navigate to BookedScreen with arguments
-      Navigator.of(context).pushReplacement(MaterialPageRoute(
-        builder: (context) => BookedScreen(),
-        settings: RouteSettings(
-          arguments: {
-            'fullName': fullName,
-            'selectedDate': selectedDate.toLocal(), // Convert to local DateTime
-            'selectedTime': selectedTime, // Pass as TimeOfDay
-            'selectedLength': selectedLength,
-            'selectedCourt': selectedCourt,
-            'selectedPaymentMethod': selectedPaymentMethod,
-          },
-        ),
-      ));
+      // Navigate to BookedScreen if user wants to view the venue
+      if (viewVenue == true) {
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (context) => BookedScreen()),
+        );
+      }
+
     } catch (error) {
       print("Failed to add booking: $error");
+      // Optional error handling (remove if not needed)
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to book the court. Please try again.')),
       );

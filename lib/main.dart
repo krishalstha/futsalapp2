@@ -1,14 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:newfutsal/Authentication/LogIn.dart';
-import 'package:newfutsal/Authentication/Register.dart';
-import 'package:newfutsal/Authentication/Forget.dart';
-import 'package:newfutsal/display_screen/home.dart';
-import 'package:newfutsal/display_screen/booking_screen.dart';
-import 'package:newfutsal/display_screen/BookedScreen.dart';
-import 'package:newfutsal/display_screen/UserProfile.dart';
 import 'package:newfutsal/firebase_options.dart';
+import 'Authentication/LogIn.dart';
+import 'NavigationBar/UserNavbar.dart';
+import 'NavigationBar/routes/routes.dart'; // Import your UserNavigationMenu here
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,21 +20,33 @@ Future<void> main() async {
   runApp(MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  User? _user;
+
+  @override
+  void initState() {
+    super.initState();
+    // Listen to authentication state changes
+    FirebaseAuth.instance.authStateChanges().listen((User? user) {
+      setState(() {
+        _user = user;
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      initialRoute: 'LogIn',
-      routes: {
-        'LogIn': (context) => MyLogIn(),
-        'Register': (context) => MyRegister(),
-        'Forget': (context) => MyForget(),
-        'home': (context) => MyHome(),
-        'BookingScreen': (context) => BookingScreen(),
-        'BookedScreen': (context) => BookedScreen(),
-        'UserProfile': (context) => UserProfile(),
-      },
+      home: _user == null
+          ? MyLogIn()
+          : UserNavigationMenu(userId: _user!.uid), // Pass the user ID to UserNavigationMenu
+      routes: appRoutes,
       theme: ThemeData(
         primarySwatch: Colors.teal,
         visualDensity: VisualDensity.adaptivePlatformDensity,

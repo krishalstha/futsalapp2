@@ -94,10 +94,6 @@ class _MyHomeState extends State<MyHome> {
     return Scaffold(
       appBar: CustomAppBar(showLeading: true),
       body: _getBody(), // Get the body based on selected index
-      bottomNavigationBar: UserNavbar(
-        onItemTapped: _onItemTapped,
-        currentIndex: _selectedIndex, // Pass the current index
-      ),
     );
   }
 }

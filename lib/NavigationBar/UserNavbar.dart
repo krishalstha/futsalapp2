@@ -1,35 +1,50 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:iconsax/iconsax.dart';
+import '../display_screen/BookedScreen.dart';
+import '../display_screen/UserProfile.dart';
+import '../display_screen/home.dart';
 
-class UserNavbar extends StatelessWidget {
-  final Function(int) onItemTapped;
-  final int currentIndex;
+class UserNavigationMenu extends StatelessWidget {
+  final String userId;
 
-  const UserNavbar({Key? key, required this.onItemTapped, required this.currentIndex}) : super(key: key);
+  UserNavigationMenu({Key? key, required this.userId}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return BottomNavigationBar(
-      backgroundColor: Colors.white,
-      elevation: 10,
-      currentIndex: currentIndex,
-      selectedItemColor: Colors.teal,
-      unselectedItemColor: Colors.grey,
-      showUnselectedLabels: false,
-      onTap: onItemTapped,
-      items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.home_outlined),
-          label: 'Home',
+    final NavigationController controller = Get.put(NavigationController());
+
+    return Scaffold(
+      bottomNavigationBar: Obx(
+            () => NavigationBar(
+          height: 60,
+          elevation: 10,
+          selectedIndex: controller.selectedIndex.value,
+          onDestinationSelected: (index) => controller.changeScreen(index),
+          backgroundColor: Colors.white,
+          indicatorColor: Colors.teal.withOpacity(0.3),
+          destinations: const [
+            NavigationDestination(icon: Icon(Iconsax.home), label: 'Home'),
+            NavigationDestination(icon: Icon(Iconsax.calendar), label: 'Booked'),
+            NavigationDestination(icon: Icon(Iconsax.user), label: 'Profile'),
+          ],
         ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.calendar_today_outlined),
-          label: 'Booked',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.person_outline),
-          label: 'Profile',
-        ),
-      ],
+      ),
+      body: Obx(() => controller.screens[controller.selectedIndex.value]),
     );
+  }
+}
+
+class NavigationController extends GetxController {
+  var selectedIndex = 0.obs;
+
+  final List<Widget> screens = [
+    MyHome(),
+    BookedScreen(),
+    UserProfile(),
+  ];
+
+  void changeScreen(int index) {
+    selectedIndex.value = index;
   }
 }

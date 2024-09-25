@@ -127,10 +127,7 @@ class _UserProfileState extends State<UserProfile> {
           ),
         ),
       ),
-      bottomNavigationBar: UserNavbar(
-        onItemTapped: _onItemTapped,
-        currentIndex: _selectedIndex, // Pass the current index
-      ),
+
     );
   }
 
