@@ -11,8 +11,8 @@ class MyRegister extends StatefulWidget {
 
 class _MyRegisterState extends State<MyRegister> {
   List dropDownListData = [
-    {"title": "Admin", "value": "1"},
-    {"title": "User", "value": "2"},
+    {"title": "Admin", "value": "admin"},
+    {"title": "User", "value": "user"},
   ];
 
   String defaultValue = "";
@@ -20,6 +20,7 @@ class _MyRegisterState extends State<MyRegister> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
   final TextEditingController _fullNameController = TextEditingController();
+  final TextEditingController _phoneNumberController = TextEditingController();
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -50,6 +51,7 @@ class _MyRegisterState extends State<MyRegister> {
                     left: 35),
                 child: Column(
                   children: [
+                    // Role Selection Dropdown
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       decoration: BoxDecoration(
@@ -68,7 +70,7 @@ class _MyRegisterState extends State<MyRegister> {
                             child: Text(item['title']),
                           );
                         }).toList(),
-                        hint: const Text("Select"),
+                        hint: const Text("Select Role"),
                         dropdownColor: Colors.grey.shade100,
                         onChanged: (value) {
                           setState(() {
@@ -79,6 +81,7 @@ class _MyRegisterState extends State<MyRegister> {
                       ),
                     ),
                     const SizedBox(height: 30),
+                    // Full Name Field
                     TextField(
                       controller: _fullNameController,
                       decoration: InputDecoration(
@@ -89,6 +92,18 @@ class _MyRegisterState extends State<MyRegister> {
                               borderRadius: BorderRadius.circular(10))),
                     ),
                     const SizedBox(height: 30),
+                    // Phone Number Field
+                    TextField(
+                      controller: _phoneNumberController,
+                      decoration: InputDecoration(
+                          fillColor: Colors.grey.shade100,
+                          filled: true,
+                          hintText: 'Phone Number',
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10))),
+                    ),
+                    const SizedBox(height: 30),
+                    // Email Field
                     TextField(
                       controller: _emailController,
                       decoration: InputDecoration(
@@ -99,6 +114,7 @@ class _MyRegisterState extends State<MyRegister> {
                               borderRadius: BorderRadius.circular(10))),
                     ),
                     const SizedBox(height: 30),
+                    // Password Field
                     TextField(
                       controller: _passwordController,
                       obscureText: true,
@@ -110,6 +126,7 @@ class _MyRegisterState extends State<MyRegister> {
                               borderRadius: BorderRadius.circular(10))),
                     ),
                     const SizedBox(height: 30),
+                    // Confirm Password Field
                     TextField(
                       controller: _confirmPasswordController,
                       obscureText: true,
@@ -121,6 +138,7 @@ class _MyRegisterState extends State<MyRegister> {
                               borderRadius: BorderRadius.circular(10))),
                     ),
                     const SizedBox(height: 30),
+                    // Sign Up Button
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -143,6 +161,7 @@ class _MyRegisterState extends State<MyRegister> {
                       ],
                     ),
                     const SizedBox(height: 10),
+                    // Sign In Button
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -180,8 +199,7 @@ class _MyRegisterState extends State<MyRegister> {
     }
 
     try {
-      final UserCredential userCredential =
-      await _auth.createUserWithEmailAndPassword(
+      final UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
@@ -189,19 +207,26 @@ class _MyRegisterState extends State<MyRegister> {
       // Get user ID
       String userId = userCredential.user!.uid;
 
-      // Save user data to Firestore
-      await _firestore.collection('users').doc(userId).set({
+      // Prepare user data
+      Map<String, dynamic> userData = {
         'email': _emailController.text.trim(),
         'fullName': _fullNameController.text.trim(),
-        'role': defaultValue, // Assuming you want to save the user's role
-      });
+        'phoneNumber': _phoneNumberController.text.trim(),
+        'role': defaultValue,
+      };
 
-      print("User registered: ${userCredential.user!.email}");
+      // Save to appropriate Firestore collection
+      if (defaultValue == 'user') {
+        await _firestore.collection('users').doc(userId).set(userData);
+        Navigator.pushReplacementNamed(context, 'userHomePage');
+      } else if (defaultValue == 'admin') {
+        await _firestore.collection('admins').doc(userId).set(userData);
+        Navigator.pushReplacementNamed(context, 'adminDashboardPage');
+      }
+
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content: Text('Registration Successful!'),
       ));
-
-      Navigator.pushReplacementNamed(context, 'home');
     } on FirebaseAuthException catch (e) {
       String message = "An error occurred";
       if (e.code == 'weak-password') {
