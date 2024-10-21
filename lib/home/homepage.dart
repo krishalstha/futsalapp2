@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+
 void main() {
   runApp(FutsalBookingApp());
 }
@@ -66,7 +67,7 @@ class HomePage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Book Futsal Grounds with Ease',
+                    'Book Futsal Grounds ',
                     style: TextStyle(
                       fontSize: 32,
                       color: Colors.white,
@@ -75,7 +76,7 @@ class HomePage extends StatelessWidget {
                   ),
                   SizedBox(height: 10),
                   Text(
-                    'Find and reserve futsal grounds in your area with our user-friendly platform. '
+                    'Reserve futsal grounds in your area with our this platform. '
                         'Secure payments, real-time availability, and instant confirmations.',
                     style: TextStyle(
                       fontSize: 16,
