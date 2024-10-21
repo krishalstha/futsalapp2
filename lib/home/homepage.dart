@@ -122,7 +122,7 @@ class HomePage extends StatelessWidget {
                           labelText: 'Location',
                           border: OutlineInputBorder(),
                         ),
-                        items: ['Kathmandu', 'Lalitpur', 'Bhaktapur']
+                        items: ['All', 'Kathmandu', 'Lalitpur', 'Bhaktapur']
                             .map((city) => DropdownMenuItem(
                           value: city,
                           child: Text(city),
