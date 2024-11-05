@@ -12,12 +12,12 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       User? user = FirebaseAuth.instance.currentUser;
       if (user != null) {
         var snapshot = await FirebaseFirestore.instance
-            .collection('users')
+            .collection('Users')
             .doc(user.uid)
             .get();
 
         if (snapshot.exists) {
-          return snapshot.data()?['fullName'] ?? 'User';
+          return snapshot.data()?['full_name'] ?? 'User';
         }
       }
     } catch (e) {

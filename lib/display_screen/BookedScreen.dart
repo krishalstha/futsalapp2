@@ -43,7 +43,7 @@ class BookedScreen extends StatelessWidget {
 
               // Fetching user data for each booking
               return FutureBuilder<DocumentSnapshot>(
-                future: FirebaseFirestore.instance.collection('users').doc(booking['userId']).get(),
+                future: FirebaseFirestore.instance.collection('Users').doc(booking['userId']).get(),
                 builder: (context, userSnapshot) {
                   if (userSnapshot.connectionState == ConnectionState.waiting) {
                     return Card(
@@ -60,7 +60,7 @@ class BookedScreen extends StatelessWidget {
                   }
 
                   final user = userSnapshot.data!.data() as Map<String, dynamic>;
-                  String fullName = user['fullName'] ?? 'N/A';
+                  String fullName = user['full_name'] ?? 'N/A';
 
                   // Displaying booking details with user's full name
                   return Card(

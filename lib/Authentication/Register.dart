@@ -1,245 +1,174 @@
-import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 
-class MyRegister extends StatefulWidget {
-  const MyRegister({super.key});
+import '../Admin/Dashboard.dart';
+import '../NavigationBar/UserNavbar.dart';
 
+class RegistrationPage extends StatefulWidget {
   @override
-  State<MyRegister> createState() => _MyRegisterState();
+  _RegistrationPageState createState() => _RegistrationPageState();
 }
 
-class _MyRegisterState extends State<MyRegister> {
-  List dropDownListData = [
-    {"title": "Admin", "value": "admin"},
-    {"title": "User", "value": "user"},
-  ];
+class _RegistrationPageState extends State<RegistrationPage> {
+  final _formKey = GlobalKey<FormState>();
 
-  String defaultValue = "";
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
   final TextEditingController _fullNameController = TextEditingController();
-  final TextEditingController _phoneNumberController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  String _selectedRole = 'User';
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  Future<void> _registerUser() async {
+    if (_formKey.currentState!.validate()) {
+      try {
+        UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+          email: _emailController.text.trim(),
+          password: _passwordController.text.trim(),
+        );
+
+        // Save user details in Firestore
+        await _firestore.collection('Users').doc(userCredential.user!.uid).set({
+          'role': _selectedRole,
+          'full_name': _fullNameController.text.trim(),
+          'email': _emailController.text.trim(),
+          'phone': _phoneController.text.trim(),
+        });
+
+        // Show success dialog
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text("Registration Successful"),
+              content: Text("You have been registered successfully!"),
+              actions: [
+                TextButton(
+                  child: Text("OK"),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    _redirectUserBasedOnRole();
+                  },
+                ),
+              ],
+            );
+          },
+        );
+
+        // Clear input fields
+        _fullNameController.clear();
+        _emailController.clear();
+        _phoneController.clear();
+        _passwordController.clear();
+      } on FirebaseAuthException catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.message ?? 'Registration failed')),
+        );
+      }
+    }
+  }
+
+  void _redirectUserBasedOnRole() async {
+    String uid = _auth.currentUser!.uid;
+
+    // Fetch the user's role from Firestore
+    DocumentSnapshot userDoc = await _firestore.collection('Users').doc(uid).get();
+    String role = userDoc['role'];
+
+    if (role == 'Admin') {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => AdminDashboard()),
+      );
+    } else if (role == 'User') {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => UserNavigationMenu()),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.only(left: 30, top: 90),
-      decoration: const BoxDecoration(
-          image: DecorationImage(image: AssetImage('assets/std.jpeg'), fit: BoxFit.cover)),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        body: Stack(
-          children: [
-            Positioned(
-              top: 50,
-              left: 30,
-              child: const Text(
-                'Register Account',
-                style: TextStyle(color: Colors.white70, fontSize: 33),
+    return Scaffold(
+      appBar: AppBar(title: Text("User Registration")),
+      body: Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: <Widget>[
+              DropdownButtonFormField<String>(
+                value: _selectedRole,
+                decoration: InputDecoration(labelText: "Role"),
+                items: ['Admin', 'User'].map((role) {
+                  return DropdownMenuItem(
+                    value: role,
+                    child: Text(role),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedRole = value!;
+                  });
+                },
               ),
-            ),
-            SingleChildScrollView(
-              child: Container(
-                padding: EdgeInsets.only(
-                    top: MediaQuery.of(context).size.height * 0.2,
-                    right: 35,
-                    left: 35),
-                child: Column(
-                  children: [
-                    // Role Selection Dropdown
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: Colors.grey),
-                      ),
-                      child: DropdownButton<String>(
-                        value: defaultValue.isEmpty ? null : defaultValue,
-                        isExpanded: true,
-                        menuMaxHeight: 350,
-                        items: dropDownListData
-                            .map<DropdownMenuItem<String>>((item) {
-                          return DropdownMenuItem<String>(
-                            value: item['value'],
-                            child: Text(item['title']),
-                          );
-                        }).toList(),
-                        hint: const Text("Select Role"),
-                        dropdownColor: Colors.grey.shade100,
-                        onChanged: (value) {
-                          setState(() {
-                            defaultValue = value!;
-                          });
-                        },
-                        underline: const SizedBox(),
-                      ),
-                    ),
-                    const SizedBox(height: 30),
-                    // Full Name Field
-                    TextField(
-                      controller: _fullNameController,
-                      decoration: InputDecoration(
-                          fillColor: Colors.grey.shade100,
-                          filled: true,
-                          hintText: 'Full Name',
-                          border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10))),
-                    ),
-                    const SizedBox(height: 30),
-                    // Phone Number Field
-                    TextField(
-                      controller: _phoneNumberController,
-                      decoration: InputDecoration(
-                          fillColor: Colors.grey.shade100,
-                          filled: true,
-                          hintText: 'Phone Number',
-                          border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10))),
-                    ),
-                    const SizedBox(height: 30),
-                    // Email Field
-                    TextField(
-                      controller: _emailController,
-                      decoration: InputDecoration(
-                          fillColor: Colors.grey.shade100,
-                          filled: true,
-                          hintText: 'Email',
-                          border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10))),
-                    ),
-                    const SizedBox(height: 30),
-                    // Password Field
-                    TextField(
-                      controller: _passwordController,
-                      obscureText: true,
-                      decoration: InputDecoration(
-                          fillColor: Colors.grey.shade100,
-                          filled: true,
-                          hintText: 'Password',
-                          border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10))),
-                    ),
-                    const SizedBox(height: 30),
-                    // Confirm Password Field
-                    TextField(
-                      controller: _confirmPasswordController,
-                      obscureText: true,
-                      decoration: InputDecoration(
-                          fillColor: Colors.grey.shade100,
-                          filled: true,
-                          hintText: 'Confirm Password',
-                          border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10))),
-                    ),
-                    const SizedBox(height: 30),
-                    // Sign Up Button
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Sign Up',
-                          style: TextStyle(
-                              color: Color(0xFFE1E0E0),
-                              fontSize: 27,
-                              fontWeight: FontWeight.w700),
-                        ),
-                        CircleAvatar(
-                          radius: 30,
-                          backgroundColor: Colors.teal,
-                          child: IconButton(
-                            color: Colors.white,
-                            onPressed: _registerAccount,
-                            icon: const Icon(Icons.arrow_forward),
-                          ),
-                        )
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    // Sign In Button
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        TextButton(
-                          onPressed: () {
-                            Navigator.pushNamed(context, 'LogIn');
-                          },
-                          child: const Text(
-                            'Sign In',
-                            style: TextStyle(
-                              decoration: TextDecoration.underline,
-                              fontSize: 20,
-                              color: Color(0xFFE1E0E0),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+              TextFormField(
+                controller: _fullNameController,
+                decoration: InputDecoration(labelText: "Full Name"),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your full name';
+                  }
+                  return null;
+                },
               ),
-            )
-          ],
+              TextFormField(
+                controller: _emailController,
+                decoration: InputDecoration(labelText: "Email"),
+                keyboardType: TextInputType.emailAddress,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your email';
+                  }
+                  return null;
+                },
+              ),
+              TextFormField(
+                controller: _phoneController,
+                decoration: InputDecoration(labelText: "Phone"),
+                keyboardType: TextInputType.phone,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your phone number';
+                  }
+                  return null;
+                },
+              ),
+              TextFormField(
+                controller: _passwordController,
+                decoration: InputDecoration(labelText: "Password"),
+                obscureText: true,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your password';
+                  }
+                  return null;
+                },
+              ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: _registerUser,
+                child: Text("Register"),
+              ),
+            ],
+          ),
         ),
       ),
     );
-  }
-
-  void _registerAccount() async {
-    if (_passwordController.text != _confirmPasswordController.text) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('Passwords do not match!'),
-      ));
-      return;
-    }
-
-    try {
-      final UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
-      );
-
-      // Get user ID
-      String userId = userCredential.user!.uid;
-
-      // Prepare user data
-      Map<String, dynamic> userData = {
-        'email': _emailController.text.trim(),
-        'fullName': _fullNameController.text.trim(),
-        'phoneNumber': _phoneNumberController.text.trim(),
-        'role': defaultValue,
-      };
-
-      // Save to appropriate Firestore collection
-      if (defaultValue == 'user') {
-        await _firestore.collection('users').doc(userId).set(userData);
-        Navigator.pushReplacementNamed(context, 'userHomePage');
-      } else if (defaultValue == 'admin') {
-        await _firestore.collection('admins').doc(userId).set(userData);
-        Navigator.pushReplacementNamed(context, 'adminDashboardPage');
-      }
-
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('Registration Successful!'),
-      ));
-    } on FirebaseAuthException catch (e) {
-      String message = "An error occurred";
-      if (e.code == 'weak-password') {
-        message = 'The password provided is too weak.';
-      } else if (e.code == 'email-already-in-use') {
-        message = 'The account already exists for that email.';
-      } else if (e.code == 'invalid-email') {
-        message = 'The email address is not valid.';
-      }
-
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(message),
-      ));
-    }
   }
 }

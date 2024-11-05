@@ -4,7 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:newfutsal/display_screen/BookedScreen.dart';
 import 'package:newfutsal/edit_box/ChangePassword.dart';
 import 'package:newfutsal/edit_box/EditProfile.dart';
-import '../NavigationBar/UserNavbar.dart';
+import '../Authentication/LogIn.dart';
 
 class UserProfile extends StatefulWidget {
   @override
@@ -14,10 +14,10 @@ class UserProfile extends StatefulWidget {
 class _UserProfileState extends State<UserProfile> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+
   String _fullName = 'Loading...';
   String _email = 'Loading...';
 
-  int _selectedIndex = 2; // Start on Profile tab
 
   @override
   void initState() {
@@ -32,11 +32,11 @@ class _UserProfileState extends State<UserProfile> {
       String userId = user.uid;
 
       try {
-        DocumentSnapshot userDoc = await _firestore.collection('users').doc(userId).get();
+        DocumentSnapshot userDoc = await _firestore.collection('Users').doc(userId).get();
 
         if (userDoc.exists) {
           setState(() {
-            _fullName = userDoc['fullName'] ?? 'User';
+            _fullName = userDoc['full_name'] ?? 'User';
             _email = userDoc['email'] ?? 'Email';
           });
         }
@@ -54,18 +54,7 @@ class _UserProfileState extends State<UserProfile> {
     }
   }
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
 
-      if (index == 0) {
-        Navigator.pushReplacementNamed(context, '/home');
-      } else if (index == 1) {
-        Navigator.pushReplacementNamed(context, '/booked');
-      }
-      // No action needed for the Profile tab
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -141,6 +130,8 @@ class _UserProfileState extends State<UserProfile> {
         style: ElevatedButton.styleFrom(
           minimumSize: Size(double.infinity, 50),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          backgroundColor: Colors.white,
+          side: BorderSide(color: Colors.teal),
         ),
       ),
     );
@@ -159,9 +150,13 @@ class _UserProfileState extends State<UserProfile> {
               child: Text('No', style: TextStyle(color: Colors.teal)),
             ),
             TextButton(
-              onPressed: () {
+              onPressed: () async {
+                await FirebaseAuth.instance.signOut();
                 Navigator.of(context).pop();
-                Navigator.pushReplacementNamed(context, 'LogIn');
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => LoginPage()),
+                );
               },
               child: Text('Yes', style: TextStyle(color: Colors.redAccent)),
             ),

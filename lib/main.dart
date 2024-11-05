@@ -44,8 +44,8 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: _user == null
-          ? MyLogIn()
-          : UserNavigationMenu(userId: _user!.uid), // Pass the user ID to UserNavigationMenu
+          ? LoginPage()
+          : UserNavigationMenu(), // Pass the user ID to UserNavigationMenu
       routes: appRoutes,
       theme: ThemeData(
         primarySwatch: Colors.teal,

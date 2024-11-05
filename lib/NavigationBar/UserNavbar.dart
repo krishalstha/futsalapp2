@@ -6,9 +6,7 @@ import '../display_screen/UserProfile.dart';
 import '../display_screen/home.dart';
 
 class UserNavigationMenu extends StatelessWidget {
-  final String userId;
-
-  UserNavigationMenu({Key? key, required this.userId}) : super(key: key);
+  UserNavigationMenu({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
