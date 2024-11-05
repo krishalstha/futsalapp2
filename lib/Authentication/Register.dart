@@ -31,7 +31,6 @@ class _RegistrationPageState extends State<RegistrationPage> {
           password: _passwordController.text.trim(),
         );
 
-        // Save user details in Firestore
         await _firestore.collection('Users').doc(userCredential.user!.uid).set({
           'role': _selectedRole,
           'full_name': _fullNameController.text.trim(),
@@ -39,7 +38,6 @@ class _RegistrationPageState extends State<RegistrationPage> {
           'phone': _phoneController.text.trim(),
         });
 
-        // Show success dialog
         showDialog(
           context: context,
           builder: (BuildContext context) {
@@ -59,7 +57,6 @@ class _RegistrationPageState extends State<RegistrationPage> {
           },
         );
 
-        // Clear input fields
         _fullNameController.clear();
         _emailController.clear();
         _phoneController.clear();
@@ -75,7 +72,6 @@ class _RegistrationPageState extends State<RegistrationPage> {
   void _redirectUserBasedOnRole() async {
     String uid = _auth.currentUser!.uid;
 
-    // Fetch the user's role from Firestore
     DocumentSnapshot userDoc = await _firestore.collection('Users').doc(uid).get();
     String role = userDoc['role'];
 
@@ -94,80 +90,147 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
   @override
   Widget build(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+    final isLandscape = mediaQuery.orientation == Orientation.landscape;
+    final padding = mediaQuery.size.width * 0.08;
+
     return Scaffold(
       appBar: AppBar(title: Text("User Registration")),
-      body: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: <Widget>[
-              DropdownButtonFormField<String>(
-                value: _selectedRole,
-                decoration: InputDecoration(labelText: "Role"),
-                items: ['Admin', 'User'].map((role) {
-                  return DropdownMenuItem(
-                    value: role,
-                    child: Text(role),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  setState(() {
-                    _selectedRole = value!;
-                  });
-                },
+      body: Stack(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage("assets/ground.jpg"), // Ensure this path is correct
+                fit: BoxFit.cover,
               ),
-              TextFormField(
-                controller: _fullNameController,
-                decoration: InputDecoration(labelText: "Full Name"),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your full name';
-                  }
-                  return null;
-                },
-              ),
-              TextFormField(
-                controller: _emailController,
-                decoration: InputDecoration(labelText: "Email"),
-                keyboardType: TextInputType.emailAddress,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your email';
-                  }
-                  return null;
-                },
-              ),
-              TextFormField(
-                controller: _phoneController,
-                decoration: InputDecoration(labelText: "Phone"),
-                keyboardType: TextInputType.phone,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your phone number';
-                  }
-                  return null;
-                },
-              ),
-              TextFormField(
-                controller: _passwordController,
-                decoration: InputDecoration(labelText: "Password"),
-                obscureText: true,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your password';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _registerUser,
-                child: Text("Register"),
-              ),
-            ],
+            ),
           ),
-        ),
+          Center(
+            child: SingleChildScrollView(
+              padding: EdgeInsets.symmetric(horizontal: padding, vertical: padding),
+              child: Card(
+                color: Colors.white.withOpacity(0.5),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                elevation: 5,
+                child: Padding(
+                  padding: EdgeInsets.all(20),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        Text(
+                          "Create an Account",
+                          style: TextStyle(
+                            fontSize: isLandscape ? 20 : 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        ),
+                        SizedBox(height: 20),
+                        DropdownButtonFormField<String>(
+                          value: _selectedRole,
+                          decoration: InputDecoration(labelText: "Role"),
+                          items: ['Admin', 'User'].map((role) {
+                            return DropdownMenuItem(
+                              value: role,
+                              child: Text(role),
+                            );
+                          }).toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedRole = value!;
+                            });
+                          },
+                        ),
+                        SizedBox(height: 15),
+                        TextFormField(
+                          controller: _fullNameController,
+                          decoration: InputDecoration(
+                            labelText: "Full Name",
+                            filled: true,
+                            fillColor: Colors.transparent,
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter your full name';
+                            }
+                            return null;
+                          },
+                        ),
+                        SizedBox(height: 15),
+                        TextFormField(
+                          controller: _emailController,
+                          decoration: InputDecoration(
+                            labelText: "Email",
+                            filled: true,
+                            fillColor: Colors.transparent,
+                          ),
+                          keyboardType: TextInputType.emailAddress,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter your email';
+                            }
+                            return null;
+                          },
+                        ),
+                        SizedBox(height: 15),
+                        TextFormField(
+                          controller: _phoneController,
+                          decoration: InputDecoration(
+                            labelText: "Phone",
+                            filled: true,
+                            fillColor: Colors.transparent,
+                          ),
+                          keyboardType: TextInputType.phone,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter your phone number';
+                            }
+                            return null;
+                          },
+                        ),
+                        SizedBox(height: 15),
+                        TextFormField(
+                          controller: _passwordController,
+                          decoration: InputDecoration(
+                            labelText: "Password",
+                            filled: true,
+                            fillColor: Colors.transparent,
+                          ),
+                          obscureText: true,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter your password';
+                            }
+                            return null;
+                          },
+                        ),
+                        SizedBox(height: 30),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            padding: EdgeInsets.symmetric(vertical: 15, horizontal: 50),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          onPressed: _registerUser,
+                          child: Text(
+                            "Register",
+                            style: TextStyle(fontSize: isLandscape ? 16 : 18),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

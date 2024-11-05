@@ -7,9 +7,62 @@ class AdminDashboard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Define a list of dashboard items
+    final List<DashboardItem> dashboardItems = [
+      DashboardItem(
+        icon: Icons.sports_soccer,
+        label: 'Futsal Details',
+        color: Colors.deepPurple,
+        onPressed: () {
+          // Navigate to Futsal Details Page
+        },
+      ),
+      DashboardItem(
+        icon: Icons.people,
+        label: 'Manage Users',
+        color: Colors.teal,
+        onPressed: () {
+          // Navigate to User Management Page
+        },
+      ),
+      DashboardItem(
+        icon: Icons.calendar_today,
+        label: 'Manage Bookings',
+        color: Colors.orange,
+        onPressed: () {
+          // Navigate to Bookings Management Page
+        },
+      ),
+      DashboardItem(
+        icon: Icons.payment,
+        label: 'Manage Payments',
+        color: Colors.blue,
+        onPressed: () {
+          // Navigate to Payments Management Page
+        },
+      ),
+      DashboardItem(
+        icon: Icons.report,
+        label: 'Reports',
+        color: Colors.redAccent,
+        onPressed: () {
+          // Navigate to Reports Page
+        },
+      ),
+      DashboardItem(
+        icon: Icons.settings,
+        label: 'Settings',
+        color: Colors.green,
+        onPressed: () {
+          // Navigate to Settings Page
+        },
+      ),
+    ];
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Admin Dashboard'),
+        backgroundColor: Colors.teal,
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
@@ -19,88 +72,29 @@ class AdminDashboard extends StatelessWidget {
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: GridView.count(
-          crossAxisCount: 2,
-          crossAxisSpacing: 16.0,
-          mainAxisSpacing: 16.0,
-          children: <Widget>[
-            _buildDashboardItem(
-              icon: Icons.sports_soccer,
-              label: 'Futsal Details',
-              onPressed: () {
-                // Navigate to Futsal Details Page
-              },
-            ),
-            _buildDashboardItem(
-              icon: Icons.people,
-              label: 'Manage Users',
-              onPressed: () {
-                // Navigate to User Management Page
-              },
-            ),
-            _buildDashboardItem(
-              icon: Icons.calendar_today,
-              label: 'Manage Bookings',
-              onPressed: () {
-                // Navigate to Bookings Management Page
-              },
-            ),
-            _buildDashboardItem(
-              icon: Icons.payment,
-              label: 'Manage Payments',
-              onPressed: () {
-                // Navigate to Payments Management Page
-              },
-            ),
-            _buildDashboardItem(
-              icon: Icons.report,
-              label: 'Reports',
-              onPressed: () {
-                // Navigate to Reports Page
-              },
-            ),
-            _buildDashboardItem(
-              icon: Icons.settings,
-              label: 'Settings',
-              onPressed: () {
-                // Navigate to Settings Page
-              },
-            ),
-          ],
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFFe0f7fa), Color(0xFF80deea)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
         ),
-      ),
-    );
-  }
-
-  // Helper function to build each dashboard item
-  Widget _buildDashboardItem({
-    required IconData icon,
-    required String label,
-    required VoidCallback onPressed,
-  }) {
-    return GestureDetector(
-      onTap: onPressed,
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.blueAccent,
-          borderRadius: BorderRadius.circular(12.0),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Icon(icon, size: 50.0, color: Colors.white),
-            const SizedBox(height: 10),
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 18,
-                color: Colors.white,
-              ),
-              textAlign: TextAlign.center,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: GridView.builder(
+            itemCount: dashboardItems.length,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2, // Adjust for responsiveness
+              crossAxisSpacing: 16.0,
+              mainAxisSpacing: 16.0,
+              childAspectRatio: 1.0,
             ),
-          ],
+            itemBuilder: (context, index) {
+              final item = dashboardItems[index];
+              return DashboardCard(item: item);
+            },
+          ),
         ),
       ),
     );
@@ -135,6 +129,56 @@ class AdminDashboard extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+}
+
+// Model class for dashboard items
+class DashboardItem {
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback onPressed;
+
+  DashboardItem({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onPressed,
+  });
+}
+
+// Widget for individual dashboard cards
+class DashboardCard extends StatelessWidget {
+  final DashboardItem item;
+
+  const DashboardCard({Key? key, required this.item}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: item.onPressed,
+      child: Card(
+        elevation: 4.0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
+        color: item.color.withOpacity(0.8),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Icon(item.icon, size: 50.0, color: Colors.white),
+            const SizedBox(height: 10),
+            Text(
+              item.label,
+              style: const TextStyle(
+                fontSize: 18,
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

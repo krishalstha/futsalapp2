@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:newfutsal/firebase_options.dart';
+import 'Admin/Dashboard.dart';
 import 'Authentication/LogIn.dart';
 import 'NavigationBar/UserNavbar.dart';
 import 'NavigationBar/routes/routes.dart'; // Import your UserNavigationMenu here
@@ -45,7 +46,7 @@ class _MyAppState extends State<MyApp> {
       debugShowCheckedModeBanner: false,
       home: _user == null
           ? LoginPage()
-          : UserNavigationMenu(), // Pass the user ID to UserNavigationMenu
+          : AdminDashboard(), // Pass the user ID to UserNavigationMenu
       routes: appRoutes,
       theme: ThemeData(
         primarySwatch: Colors.teal,

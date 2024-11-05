@@ -75,7 +75,18 @@ class _MyForgetState extends State<MyForget> {
                       ),
                     ),
                     SizedBox(height: 30),
-
+                    TextField(
+                      obscureText: true,
+                      decoration: InputDecoration(
+                        fillColor: Colors.grey.shade100,
+                        filled: true,
+                        hintText: 'Email',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 40),
                     TextField(
                       obscureText: true,
                       decoration: InputDecoration(

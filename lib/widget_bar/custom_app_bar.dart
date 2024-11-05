@@ -26,12 +26,22 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     return 'User';
   }
 
-  Future<int> _getNotificationCount() async {
-    var snapshot = await FirebaseFirestore.instance
-        .collection('notifications')
-        .where('read', isEqualTo: false)
-        .get();
-    return snapshot.size;
+  Future<List<Map<String, dynamic>>> _getNotifications() async {
+    try {
+      var snapshot = await FirebaseFirestore.instance
+          .collection('notifications')
+          .where('read', isEqualTo: false)
+          .orderBy('timestamp', descending: true)
+          .limit(5)
+          .get();
+
+      return snapshot.docs
+          .map((doc) => doc.data() as Map<String, dynamic>)
+          .toList();
+    } catch (e) {
+      print('Error fetching notifications: $e');
+      return [];
+    }
   }
 
   @override
@@ -57,51 +67,70 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text('Hello,', style: TextStyle(fontSize: 16, color: Colors.white)),
-              Text(userName,
-                  style: TextStyle(
-                      fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
+              Text(
+                userName,
+                style: TextStyle(
+                    fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+              ),
             ],
           );
         },
       ),
       actions: [
-        FutureBuilder<int>(
-          future: _getNotificationCount(),
+        FutureBuilder<List<Map<String, dynamic>>>(
+          future: _getNotifications(),
           builder: (context, snapshot) {
-            int count = snapshot.data ?? 0;
-            return IconButton(
+            List<Map<String, dynamic>> notifications = snapshot.data ?? [];
+            int count = notifications.length;
+
+            return PopupMenuButton(
               icon: Stack(
                 children: [
                   Icon(Icons.notifications, color: Colors.yellow),
-                  if (count > 0)
-                    Positioned(
-                      right: 0,
-                      child: Container(
-                        padding: EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: Colors.red,
-                          shape: BoxShape.circle,
-                        ),
-                        constraints: BoxConstraints(
-                          minWidth: 18,
-                          minHeight: 18,
-                        ),
-                        child: Center(
-                          child: Text(
-                            '$count',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
+                  Positioned(
+                    right: 0,
+                    left: 10,
+                    child: Container(
+                      padding: EdgeInsets.all(0.1),
+                      decoration: BoxDecoration(
+                        color: Colors.red,
+                        shape: BoxShape.circle,
+                      ),
+                      constraints: BoxConstraints(
+                        minWidth: 18,
+                        minHeight: 18,
+                      ),
+                      child: Center(
+                        child: Text(
+                          '$count', // Display '0' if there are no notifications
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
                     ),
+                  ),
                 ],
               ),
-              onPressed: () {
-                _showNotificationDetails(context);
+              itemBuilder: (BuildContext context) {
+                if (notifications.isEmpty) {
+                  return [
+                    PopupMenuItem(
+                      child: Text('No new notifications'),
+                    ),
+                  ];
+                } else {
+                  return notifications.map((notification) {
+                    return PopupMenuItem(
+                      child: ListTile(
+                        title: Text(notification['title'] ?? 'Notification'),
+                        subtitle: Text(notification['message'] ?? ''),
+                      ),
+                    );
+                  }).toList();
+                }
               },
             );
           },
@@ -114,26 +143,6 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
         ),
         SizedBox(width: 20),
       ],
-    );
-  }
-
-  void _showNotificationDetails(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      builder: (BuildContext context) {
-        return Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Notifications', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-              SizedBox(height: 16),
-              Text('You have new notifications.'),
-            ],
-          ),
-        );
-      },
     );
   }
 
