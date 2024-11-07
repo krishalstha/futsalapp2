@@ -1,7 +1,8 @@
+//booking_screen
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'BookedScreen.dart';// Update this with the actual path
+import 'BookedScreen.dart';
 
 class BookingScreen extends StatefulWidget {
   const BookingScreen({Key? key}) : super(key: key);
@@ -63,6 +64,9 @@ class _BookingScreenState extends State<BookingScreen> {
         return;
       }
 
+      // Get the user's phone number if it's stored in the user's profile, or ask for it
+      String phoneNumber = currentUser.phoneNumber ?? '+1234567890'; // Placeholder or fetch from user's input if required
+
       CollectionReference bookings = FirebaseFirestore.instance.collection('bookingcort');
 
       await bookings.add({
@@ -74,9 +78,10 @@ class _BookingScreenState extends State<BookingScreen> {
         'selectedPaymentMethod': selectedPaymentMethod,
         'location': 'Kathmandu',
         'futsal': 'ReaverField Futsal',
+        'phone': phoneNumber,  // Add the phone field here
       });
 
-      // Show confirmation dialog
+      // Continue with the rest of your booking logic
       bool? viewVenue = await showDialog<bool>(
         context: context,
         builder: (BuildContext context) {
@@ -101,7 +106,6 @@ class _BookingScreenState extends State<BookingScreen> {
         },
       );
 
-      // Navigate to BookedScreen if user wants to view the venue
       if (viewVenue == true) {
         Navigator.of(context).push(
           MaterialPageRoute(builder: (context) => BookedScreen()),
@@ -110,7 +114,6 @@ class _BookingScreenState extends State<BookingScreen> {
 
     } catch (error) {
       print("Failed to add booking: $error");
-      // Optional error handling (remove if not needed)
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to book the court. Please try again.')),
       );
@@ -135,16 +138,22 @@ class _BookingScreenState extends State<BookingScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildHeaderSection(),
+              Divider(thickness: 1.2),
               SizedBox(height: 16),
               _buildDateSection(),
+              Divider(thickness: 1.2),
               SizedBox(height: 16),
               _buildTimeSection(),
+              Divider(thickness: 1.2),
               SizedBox(height: 16),
               _buildDurationSection(),
+              Divider(thickness: 1.2),
               SizedBox(height: 16),
               _buildCourtSelection(),
+              Divider(thickness: 1.2),
               SizedBox(height: 16),
               _buildPaymentMethod(),
+              Divider(thickness: 1.2),
               SizedBox(height: 32),
               _buildBookButton(),
             ],
@@ -158,8 +167,8 @@ class _BookingScreenState extends State<BookingScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('ReaverField Futsal', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-        Text('Location: Kathmandu', style: TextStyle(fontSize: 16)),
+        Text('ReaverField Futsal', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.teal.shade800)),
+        Text('Location: Kathmandu', style: TextStyle(fontSize: 16, color: Colors.grey.shade600)),
       ],
     );
   }
@@ -174,10 +183,12 @@ class _BookingScreenState extends State<BookingScreen> {
           onTap: _selectDate,
           child: InputDecorator(
             decoration: InputDecoration(
-              border: OutlineInputBorder(),
-              suffixIcon: Icon(Icons.calendar_today),
+              filled: true,
+              fillColor: Colors.teal.shade50,
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0)),
+              suffixIcon: Icon(Icons.calendar_today, color: Colors.teal),
             ),
-            child: Text('${selectedDate.toLocal()}'.split(' ')[0]),
+            child: Text('${selectedDate.toLocal()}'.split(' ')[0], style: TextStyle(fontSize: 16, color: Colors.black87)),
           ),
         ),
       ],
@@ -194,10 +205,12 @@ class _BookingScreenState extends State<BookingScreen> {
           onTap: _selectTime,
           child: InputDecorator(
             decoration: InputDecoration(
-              border: OutlineInputBorder(),
-              suffixIcon: Icon(Icons.access_time),
+              filled: true,
+              fillColor: Colors.teal.shade50,
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0)),
+              suffixIcon: Icon(Icons.access_time, color: Colors.teal),
             ),
-            child: Text('${selectedTime.format(context)}'),
+            child: Text('${selectedTime.format(context)}', style: TextStyle(fontSize: 16, color: Colors.black87)),
           ),
         ),
       ],
@@ -213,7 +226,7 @@ class _BookingScreenState extends State<BookingScreen> {
         Row(
           children: [
             IconButton(
-              icon: Icon(Icons.remove),
+              icon: Icon(Icons.remove_circle, color: Colors.teal),
               onPressed: () {
                 setState(() {
                   if (selectedLength > 30) selectedLength -= 30;
@@ -222,7 +235,7 @@ class _BookingScreenState extends State<BookingScreen> {
             ),
             Text('$selectedLength minutes', style: TextStyle(fontSize: 18)),
             IconButton(
-              icon: Icon(Icons.add),
+              icon: Icon(Icons.add_circle, color: Colors.teal),
               onPressed: () {
                 setState(() {
                   selectedLength += 30;
@@ -253,7 +266,9 @@ class _BookingScreenState extends State<BookingScreen> {
             });
           },
           decoration: InputDecoration(
-            border: OutlineInputBorder(),
+            filled: true,
+            fillColor: Colors.teal.shade50,
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0)),
           ),
         ),
       ],
@@ -278,7 +293,9 @@ class _BookingScreenState extends State<BookingScreen> {
             });
           },
           decoration: InputDecoration(
-            border: OutlineInputBorder(),
+            filled: true,
+            fillColor: Colors.teal.shade50,
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0)),
           ),
         ),
       ],
@@ -290,10 +307,12 @@ class _BookingScreenState extends State<BookingScreen> {
       child: ElevatedButton(
         onPressed: _bookCourt,
         style: ElevatedButton.styleFrom(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
           backgroundColor: Colors.teal,
+          elevation: 3,
         ),
-        child: Text('Book Now', style: TextStyle(fontSize: 18)),
+        child: Text('Book Now', style: TextStyle(fontSize: 18, color: Colors.white)),
       ),
     );
   }
