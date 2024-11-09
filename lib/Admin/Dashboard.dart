@@ -12,6 +12,42 @@ import 'Settings.dart';
 class AdminDashboard extends StatelessWidget {
   const AdminDashboard({super.key});
 
+  // Logout confirmation dialog
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text(
+            'Logout',
+            style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold),
+          ),
+          content: const Text(
+            'Are you sure you want to log out?',
+            style: TextStyle(fontSize: 16),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('No', style: TextStyle(color: Colors.teal, fontSize: 16)),
+            ),
+            TextButton(
+              onPressed: () async {
+                await FirebaseAuth.instance.signOut();
+                Navigator.of(context).pop();
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => LoginPage()),
+                );
+              },
+              child: const Text('Yes', style: TextStyle(color: Colors.redAccent, fontSize: 16)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final List<DashboardItem> dashboardItems = [
@@ -19,82 +55,43 @@ class AdminDashboard extends StatelessWidget {
         icon: Icons.sports_soccer,
         label: 'Futsal Details',
         color: Colors.deepPurple,
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => FutsalDetail()),
-          );
-        },
+        destination: FutsalDetail(documentId: "your_valid_document_id"), // Ensure you pass a valid documentId here
       ),
       DashboardItem(
         icon: Icons.people,
         label: 'Manage Users',
         color: Colors.teal,
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => ManageUsers()),
-          );
-        },
+        destination: ManageUsers(),
       ),
       DashboardItem(
         icon: Icons.calendar_today,
         label: 'Manage Bookings',
         color: Colors.orange,
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => ManageBookings()),
-          );
-        },
+        destination: ManageBookings(),
       ),
       DashboardItem(
         icon: Icons.payment,
         label: 'Manage Payments',
         color: Colors.blue,
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => ManagePayments()),
-          );
-        },
+        destination: ManagePayments(),
       ),
-
       DashboardItem(
         icon: Icons.notifications_active_outlined,
         label: 'Manage Notification',
         color: Colors.blue,
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => ManageNotifications()),
-          );
-        },
+        destination: ManageNotifications(),
       ),
-
-
-
       DashboardItem(
         icon: Icons.report,
         label: 'Reports',
         color: Colors.redAccent,
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => Reports()),
-          );
-        },
+        destination: Reports(),
       ),
       DashboardItem(
         icon: Icons.settings,
         label: 'Settings',
         color: Colors.green,
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => Settings()),
-          );
-        },
+        destination: Settings(),
       ),
     ];
 
@@ -108,9 +105,7 @@ class AdminDashboard extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
-            onPressed: () {
-              _showLogoutDialog(context);
-            },
+            onPressed: () => _showLogoutDialog(context),
           ),
         ],
       ),
@@ -133,49 +128,11 @@ class AdminDashboard extends StatelessWidget {
               childAspectRatio: 1.0,
             ),
             itemBuilder: (context, index) {
-              final item = dashboardItems[index];
-              return DashboardCard(item: item);
+              return DashboardCard(item: dashboardItems[index]);
             },
           ),
         ),
       ),
-    );
-  }
-
-  void _showLogoutDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text(
-            'Logout',
-            style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold),
-          ),
-          content: const Text(
-            'Are you sure you want to log out?',
-            style: TextStyle(fontSize: 16),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('No', style: TextStyle(color: Colors.teal, fontSize: 16)),
-            ),
-            TextButton(
-              onPressed: () async {
-                await FirebaseAuth.instance.signOut();
-                Navigator.of(context).pop();
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => LoginPage()),
-                );
-              },
-              child: const Text('Yes', style: TextStyle(color: Colors.redAccent, fontSize: 16)),
-            ),
-          ],
-        );
-      },
     );
   }
 }
@@ -184,13 +141,13 @@ class DashboardItem {
   final IconData icon;
   final String label;
   final Color color;
-  final VoidCallback onPressed;
+  final Widget destination;
 
   DashboardItem({
     required this.icon,
     required this.label,
     required this.color,
-    required this.onPressed,
+    required this.destination,
   });
 }
 
@@ -202,7 +159,10 @@ class DashboardCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: item.onPressed,
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => item.destination),
+      ),
       child: Card(
         elevation: 6.0,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),

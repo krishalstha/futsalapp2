@@ -26,6 +26,7 @@ dependencies:
   cloud_firestore: ^5.4.2
   firebase_storage: ^12.1.0
   cloud_functions: ^5.0.3
+  intl: ^0.17.0
 
 
 dev_dependencies:

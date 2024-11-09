@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:newfutsal/display_screen/BookedScreen.dart';
+import 'package:newfutsal/display_screen/booking_screen.dart'; // Correct import for BookingScreen
+import 'package:newfutsal/display_screen/BookedScreen.dart'; // Correct import for BookedScreen
 import 'package:newfutsal/display_screen/UserProfile.dart';
 import '../NavigationBar/UserNavbar.dart';
-import 'booking_screen.dart';
 import 'package:newfutsal/widget_bar/custom_app_bar.dart';
-
 
 class MyHome extends StatefulWidget {
   const MyHome({Key? key}) : super(key: key);

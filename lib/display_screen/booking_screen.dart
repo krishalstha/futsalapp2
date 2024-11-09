@@ -1,7 +1,7 @@
-//booking_screen
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:intl/intl.dart'; // For date formatting
 import 'BookedScreen.dart';
 
 class BookingScreen extends StatefulWidget {
@@ -18,7 +18,11 @@ class _BookingScreenState extends State<BookingScreen> {
   int selectedCourt = 2;
   String selectedPaymentMethod = 'Credit card';
   bool isBooking = false;
+  bool showLoading = false;
 
+  TextEditingController phoneController = TextEditingController();
+
+  // Date picker function
   void _selectDate() async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -33,6 +37,7 @@ class _BookingScreenState extends State<BookingScreen> {
     }
   }
 
+  // Time picker function
   void _selectTime() async {
     final TimeOfDay? picked = await showTimePicker(
       context: context,
@@ -45,30 +50,37 @@ class _BookingScreenState extends State<BookingScreen> {
     }
   }
 
+  // Booking function with Firestore integration
   void _bookCourt() async {
     if (isBooking) return;
     setState(() {
       isBooking = true;
+      showLoading = true;
     });
 
     try {
       User? currentUser = FirebaseAuth.instance.currentUser;
 
+      // Check if user is logged in
       if (currentUser == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('You need to be logged in to book a court.')),
         );
         setState(() {
           isBooking = false;
+          showLoading = false;
         });
         return;
       }
 
-      // Get the user's phone number if it's stored in the user's profile, or ask for it
-      String phoneNumber = currentUser.phoneNumber ?? '+1234567890'; // Placeholder or fetch from user's input if required
+      // Get phone number from input or use Firebase phone number
+      String phoneNumber = phoneController.text.isNotEmpty
+          ? phoneController.text
+          : currentUser.phoneNumber ?? '+1234567890';
 
       CollectionReference bookings = FirebaseFirestore.instance.collection('bookingcort');
 
+      // Add booking details to Firestore
       await bookings.add({
         'userId': currentUser.uid,
         'selectedDate': selectedDate.toIso8601String(),
@@ -78,38 +90,33 @@ class _BookingScreenState extends State<BookingScreen> {
         'selectedPaymentMethod': selectedPaymentMethod,
         'location': 'Kathmandu',
         'futsal': 'ReaverField Futsal',
-        'phone': phoneNumber,  // Add the phone field here
+        'phone': phoneNumber,
       });
 
-      // Continue with the rest of your booking logic
-      bool? viewVenue = await showDialog<bool>(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text('Booking Successful'),
-            content: Text('Court booked successfully! Do you want to view the venue?'),
-            actions: <Widget>[
-              TextButton(
-                child: Text('No'),
-                onPressed: () {
-                  Navigator.of(context).pop(false);
-                },
-              ),
-              TextButton(
-                child: Text('Yes'),
-                onPressed: () {
-                  Navigator.of(context).pop(true);
-                },
-              ),
-            ],
-          );
-        },
-      );
+      // Ask user if they want to view the venue after booking
+      bool? viewVenue = await showDialog<bool>(context: context, builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Booking Successful'),
+          content: Text('Court booked successfully! Do you want to view the venue?'),
+          actions: <Widget>[
+            TextButton(
+              child: Text('No'),
+              onPressed: () {
+                Navigator.of(context).pop(false);
+              },
+            ),
+            TextButton(
+              child: Text('Yes'),
+              onPressed: () {
+                Navigator.of(context).pop(true);
+              },
+            ),
+          ],
+        );
+      });
 
       if (viewVenue == true) {
-        Navigator.of(context).push(
-          MaterialPageRoute(builder: (context) => BookedScreen()),
-        );
+        Navigator.of(context).push(MaterialPageRoute(builder: (context) => BookedScreen()));
       }
 
     } catch (error) {
@@ -120,6 +127,7 @@ class _BookingScreenState extends State<BookingScreen> {
     } finally {
       setState(() {
         isBooking = false;
+        showLoading = false;
       });
     }
   }
@@ -154,8 +162,15 @@ class _BookingScreenState extends State<BookingScreen> {
               SizedBox(height: 16),
               _buildPaymentMethod(),
               Divider(thickness: 1.2),
+              SizedBox(height: 16),
+              _buildPhoneNumberField(),
+              Divider(thickness: 1.2),
               SizedBox(height: 32),
               _buildBookButton(),
+              if (showLoading)
+                Center(
+                  child: CircularProgressIndicator(),
+                ),
             ],
           ),
         ),
@@ -163,6 +178,7 @@ class _BookingScreenState extends State<BookingScreen> {
     );
   }
 
+  // Header section with futsal name and location
   Widget _buildHeaderSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -173,6 +189,7 @@ class _BookingScreenState extends State<BookingScreen> {
     );
   }
 
+  // Date selection section
   Widget _buildDateSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -188,13 +205,14 @@ class _BookingScreenState extends State<BookingScreen> {
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0)),
               suffixIcon: Icon(Icons.calendar_today, color: Colors.teal),
             ),
-            child: Text('${selectedDate.toLocal()}'.split(' ')[0], style: TextStyle(fontSize: 16, color: Colors.black87)),
+            child: Text(DateFormat('yyyy-MM-dd').format(selectedDate), style: TextStyle(fontSize: 16, color: Colors.black87)),
           ),
         ),
       ],
     );
   }
 
+  // Time selection section
   Widget _buildTimeSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -217,6 +235,7 @@ class _BookingScreenState extends State<BookingScreen> {
     );
   }
 
+  // Duration selection section
   Widget _buildDurationSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -248,6 +267,7 @@ class _BookingScreenState extends State<BookingScreen> {
     );
   }
 
+  // Court selection section
   Widget _buildCourtSelection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -275,6 +295,7 @@ class _BookingScreenState extends State<BookingScreen> {
     );
   }
 
+  // Payment method section
   Widget _buildPaymentMethod() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -302,6 +323,28 @@ class _BookingScreenState extends State<BookingScreen> {
     );
   }
 
+  // Phone number input field
+  Widget _buildPhoneNumberField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Phone Number', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500)),
+        SizedBox(height: 8),
+        TextField(
+          controller: phoneController,
+          keyboardType: TextInputType.phone,
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: Colors.teal.shade50,
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0)),
+            hintText: 'Enter your phone number',
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Book button widget
   Widget _buildBookButton() {
     return Center(
       child: ElevatedButton(
