@@ -2,16 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart'; // For date formatting
-import 'BookedScreen.dart';
+import 'package:newfutsal/display_screen/Bhaktapur/BookedScreen2.dart';
+import '../Kathmandu/BookedScreen.dart';
 
-class BookingScreen extends StatefulWidget {
-  const BookingScreen({Key? key}) : super(key: key);
+class BookingScreen2 extends StatefulWidget {
+  const BookingScreen2({Key? key}) : super(key: key);
 
   @override
   _BookingScreenState createState() => _BookingScreenState();
 }
 
-class _BookingScreenState extends State<BookingScreen> {
+class _BookingScreenState extends State<BookingScreen2> {
   DateTime selectedDate = DateTime.now();
   TimeOfDay selectedTime = TimeOfDay(hour: 21, minute: 0);
   int selectedLength = 60;
@@ -78,7 +79,7 @@ class _BookingScreenState extends State<BookingScreen> {
           ? phoneController.text
           : currentUser.phoneNumber ?? '+1234567890';
 
-      CollectionReference bookings = FirebaseFirestore.instance.collection('bookingcort');
+      CollectionReference bookings = FirebaseFirestore.instance.collection('bookingcort2');
 
       // Add booking details to Firestore
       await bookings.add({
@@ -88,8 +89,8 @@ class _BookingScreenState extends State<BookingScreen> {
         'selectedLength': selectedLength,
         'selectedCourt': selectedCourt,
         'selectedPaymentMethod': selectedPaymentMethod,
-        'location': 'Kathmandu',
-        'futsal': 'ReaverField Futsal',
+        'location': 'Bhaktapur',
+        'futsal': 'Royal Nepal Futsal',
         'phone': phoneNumber,
       });
 
@@ -116,7 +117,7 @@ class _BookingScreenState extends State<BookingScreen> {
       });
 
       if (viewVenue == true) {
-        Navigator.of(context).push(MaterialPageRoute(builder: (context) => BookedScreen()));
+        Navigator.of(context).push(MaterialPageRoute(builder: (context) => BookedScreen2()));
       }
 
     } catch (error) {
@@ -183,8 +184,8 @@ class _BookingScreenState extends State<BookingScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('ReaverField Futsal', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.teal.shade800)),
-        Text('Location: Kathmandu', style: TextStyle(fontSize: 16, color: Colors.grey.shade600)),
+        Text('Bhaktapur Futsal', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.teal.shade800)),
+        Text('Location: Bhaktapur', style: TextStyle(fontSize: 16, color: Colors.grey.shade600)),
       ],
     );
   }

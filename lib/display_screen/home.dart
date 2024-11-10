@@ -1,9 +1,12 @@
-import 'package:flutter/material.dart';
-import 'package:newfutsal/display_screen/booking_screen.dart'; // Correct import for BookingScreen
-import 'package:newfutsal/display_screen/BookedScreen.dart'; // Correct import for BookedScreen
+import 'package:flutter/material.dart'; // Correct import for BookingScreen
+import 'package:newfutsal/display_screen/Kathmandu/BookedScreen.dart'; // Correct import for BookedScreen
+import 'package:newfutsal/display_screen/Lalitpur/bookingscreen3.dart';
 import 'package:newfutsal/display_screen/UserProfile.dart';
+import 'package:newfutsal/display_screen/Bhaktapur/bookingscreen2.dart';
 import '../NavigationBar/UserNavbar.dart';
 import 'package:newfutsal/widget_bar/custom_app_bar.dart';
+
+import 'Kathmandu/booking_screen.dart';
 
 class MyHome extends StatefulWidget {
   const MyHome({Key? key}) : super(key: key);
@@ -70,7 +73,8 @@ class _MyHomeState extends State<MyHome> {
                 rating: 4.3,
                 price: 500,
                 slots: 2,
-                imageUrl: 'assets/RiverField.png',
+                imageUrl: 'assets/RiverField.png', onTap: () { Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => BookingScreen())); },
               ),
               FutsalCard(
                 title: 'Bhaktapur Futsal',
@@ -78,7 +82,8 @@ class _MyHomeState extends State<MyHome> {
                 rating: 4.0,
                 price: 500,
                 slots: 2,
-                imageUrl: 'assets/BhaktapurRoyalNepal.png',
+                imageUrl: 'assets/BhaktapurRoyalNepal.png', onTap: () { Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => BookingScreen2())); },
               ),
               FutsalCard(
                 title: 'Lalitpur Futsal',
@@ -86,7 +91,8 @@ class _MyHomeState extends State<MyHome> {
                 rating: 4.0,
                 price: 500,
                 slots: 2,
-                imageUrl: 'assets/FutsalVillage.png',
+                imageUrl: 'assets/FutsalVillage.png', onTap: () { Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => BookingScreen3())); },
               ),
             ],
           ),
@@ -111,6 +117,7 @@ class FutsalCard extends StatelessWidget {
   final int price;
   final int slots;
   final String imageUrl;
+  final VoidCallback onTap;
 
   const FutsalCard({
     required this.title,
@@ -119,16 +126,14 @@ class FutsalCard extends StatelessWidget {
     required this.price,
     required this.slots,
     required this.imageUrl,
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        Navigator.of(context).push(MaterialPageRoute(
-          builder: (context) => BookingScreen(),
-        ));
-      },
+      onTap: onTap,
+
       child: Card(
         elevation: 5,
         shape: RoundedRectangleBorder(

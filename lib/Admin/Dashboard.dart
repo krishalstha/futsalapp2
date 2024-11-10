@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:newfutsal/Admin/Bhaktapur/futsal_detail2.dart';
+import 'package:newfutsal/Admin/Lalitpur/futsal_detail3.dart';
 import '../Authentication/LogIn.dart';
-import 'futsal_detail.dart';
+import 'Kathmandu/futsal_detail.dart';
 import 'manage_notification.dart';
 import 'manage_users.dart';
 import 'manage_bookings.dart';
@@ -53,9 +55,19 @@ class AdminDashboard extends StatelessWidget {
     final List<DashboardItem> dashboardItems = [
       DashboardItem(
         icon: Icons.sports_soccer,
-        label: 'Futsal Details',
+        label: 'Futsal Details(ktm)',
         color: Colors.deepPurple,
-        destination: FutsalDetail(documentId: "your_valid_document_id"), // Ensure you pass a valid documentId here
+        destination: BookingDetailPage(), // Ensure you pass a valid documentId here
+      ), DashboardItem(
+        icon: Icons.sports_soccer,
+        label: 'Futsal Details(BHKT)',
+        color: Colors.deepPurple,
+        destination: BookingDetailPage2(), // Ensure you pass a valid documentId here
+      ),DashboardItem(
+        icon: Icons.sports_soccer,
+        label: 'Futsal Details(LALIT)',
+        color: Colors.deepPurple,
+        destination: BookingDetailPage3(), // Ensure you pass a valid documentId here
       ),
       DashboardItem(
         icon: Icons.people,

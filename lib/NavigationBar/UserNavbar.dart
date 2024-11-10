@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
-import '../display_screen/BookedScreen.dart';
+import '../display_screen/Kathmandu/BookedScreen.dart';
 import '../display_screen/UserProfile.dart';
 import '../display_screen/home.dart';
 

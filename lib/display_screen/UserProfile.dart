@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:newfutsal/display_screen/BookedScreen.dart';
+import 'package:newfutsal/display_screen/Kathmandu/BookedScreen.dart';
 import 'package:newfutsal/edit_box/ChangePassword.dart';
 import 'package:newfutsal/edit_box/EditProfile.dart';
 import '../Authentication/LogIn.dart';

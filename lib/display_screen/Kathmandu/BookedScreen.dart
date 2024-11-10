@@ -50,10 +50,6 @@ class BookedScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Full Name: ${booking['fullName'] ?? 'N/A'}',
-                        style: TextStyle(fontSize: 16),
-                      ),
-                      Text(
                         'User ID: ${booking['userId']}',
                         style: TextStyle(fontSize: 16),
                       ),
