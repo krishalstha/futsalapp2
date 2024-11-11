@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:newfutsal/Admin/Bhaktapur/AcceptedDetail2.dart';
+import 'package:newfutsal/Admin/Lalitpur/AcceptedDetail3.dart';
 import '../display_screen/Kathmandu/booking_screen.dart';
+import 'Kathmandu/AcceptedDetail.dart';
  // Import the BookingScreen
 
 class ManageBookings extends StatelessWidget {
@@ -17,7 +20,7 @@ class ManageBookings extends StatelessWidget {
             context,
             'Kathmandu Accepted Details',
                 () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => BookingScreen())
+                MaterialPageRoute(builder: (context) => DetailsKathmandu())
             ),
           ),
           // Upcoming Bookings Card
@@ -25,7 +28,7 @@ class ManageBookings extends StatelessWidget {
             context,
             'Bhaktapur Accepted Details',
                 () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => BookingScreen())  // Change to actual screen if needed
+                MaterialPageRoute(builder: (context) => DetailsBhaktapur())  // Change to actual screen if needed
             ),
           ),
           // Booking History Card
@@ -33,17 +36,11 @@ class ManageBookings extends StatelessWidget {
             context,
             'Lalitpur Accepted Details',
                 () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => BookingScreen())  // Change to actual screen if needed
+                MaterialPageRoute(builder: (context) => DetailsLalitpur())  // Change to actual screen if needed
             ),
           ),
           // Cancel Booking Card
-          _buildCard(
-            context,
-            'Cancel Booking',
-                () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => BookingScreen())  // Change to actual screen if needed
-            ),
-          ),
+
         ],
       ),
     );

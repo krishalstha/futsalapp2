@@ -3,11 +3,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart'; // For date formatting
 import 'package:newfutsal/display_screen/Bhaktapur/BookedScreen2.dart';
-import '../Kathmandu/BookedScreen.dart';
+
+
 
 class BookingScreen2 extends StatefulWidget {
   const BookingScreen2({Key? key}) : super(key: key);
-
+//backend
   @override
   _BookingScreenState createState() => _BookingScreenState();
 }
@@ -132,7 +133,7 @@ class _BookingScreenState extends State<BookingScreen2> {
       });
     }
   }
-
+//this is user interface
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -184,7 +185,7 @@ class _BookingScreenState extends State<BookingScreen2> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Bhaktapur Futsal', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.teal.shade800)),
+        Text('Royal Nepal Futsal', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.teal.shade800)),
         Text('Location: Bhaktapur', style: TextStyle(fontSize: 16, color: Colors.grey.shade600)),
       ],
     );

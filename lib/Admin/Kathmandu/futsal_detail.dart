@@ -3,9 +3,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 
-class BookingDetailPage extends StatelessWidget {
+class BookingDetailPage extends StatefulWidget {
   const BookingDetailPage({Key? key}) : super(key: key);
 
+  @override
+  _BookingDetailPageState createState() => _BookingDetailPageState();
+}
+
+class _BookingDetailPageState extends State<BookingDetailPage> {
   Future<List<Map<String, dynamic>>> fetchBookingDetails() async {
     try {
       final currentUser = FirebaseAuth.instance.currentUser;
@@ -19,12 +24,14 @@ class BookingDetailPage extends StatelessWidget {
       QuerySnapshot snapshot = await FirebaseFirestore.instance
           .collection('bookingcort')
           .where('userId', isEqualTo: userId)
-          .get(); // Fetch all booking details for the user
+          .get();
 
       if (snapshot.docs.isNotEmpty) {
-        return snapshot.docs
-            .map((doc) => doc.data() as Map<String, dynamic>)
-            .toList();
+        return snapshot.docs.map((doc) {
+          Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+          data['bookingId'] = doc.id;
+          return data;
+        }).toList();
       } else {
         print("No bookings found for this user.");
         return [];
@@ -35,14 +42,56 @@ class BookingDetailPage extends StatelessWidget {
     }
   }
 
-  Future<void> updateBookingStatus(String bookingId, String status) async {
+  Future<void> acceptBooking(String bookingId, Map<String, dynamic> bookingData) async {
     try {
-      await FirebaseFirestore.instance
-          .collection('bookingcort')
-          .doc(bookingId)
-          .update({'status': status}); // Update the booking status
+      await FirebaseFirestore.instance.collection('Kathmandudetails').add(bookingData);
+
+      await showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Booking Accepted'),
+          content: const Text('The booking has been accepted successfully.'),
+          actions: [
+            TextButton(
+              onPressed: () async {
+                Navigator.of(context).pop();
+                await FirebaseFirestore.instance.collection('bookingcort').doc(bookingId).delete();
+                setState(() {});
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
     } catch (e) {
-      print("Error updating booking status: $e");
+      print("Error accepting booking: $e");
+    }
+  }
+
+  Future<void> denyBooking(String bookingId) async {
+    try {
+      // Remove booking from the 'bookingcort' collection
+      await FirebaseFirestore.instance.collection('bookingcort').doc(bookingId).delete();
+
+      // Show a confirmation dialog
+      await showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Booking Denied'),
+          content: const Text('The booking has been denied and removed from the database.'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                setState(() {});
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+    } catch (e) {
+      print("Error denying booking: $e");
     }
   }
 
@@ -62,7 +111,7 @@ class BookingDetailPage extends StatelessWidget {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError || !snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text("Error loading booking details"));
+            return const Center(child: Text(" NO booking details"));
           }
 
           final bookingDataList = snapshot.data!;
@@ -72,7 +121,8 @@ class BookingDetailPage extends StatelessWidget {
               itemCount: bookingDataList.length,
               itemBuilder: (context, index) {
                 final bookingData = bookingDataList[index];
-                final bookingId = bookingData['bookingId'];  // Assuming 'bookingId' is the unique identifier in the collection
+                final bookingId = bookingData['bookingId'] ?? 'No ID';
+
                 return Card(
                   elevation: 4.0,
                   shape: RoundedRectangleBorder(
@@ -84,26 +134,26 @@ class BookingDetailPage extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildDetailRow('Futsal', bookingData['futsal']),
-                        _buildDetailRow('Location', bookingData['location']),
-                        _buildDetailRow('Phone', bookingData['phone']),
+                        _buildDetailRow('Futsal', bookingData['futsal'] ?? 'Not specified'),
+                        _buildDetailRow('Location', bookingData['location'] ?? 'Not specified'),
+                        _buildDetailRow('Phone', bookingData['phone'] ?? 'Not specified'),
                         _buildDetailRow(
                           'Date',
                           _formatDate(bookingData['selectedDate']),
                         ),
-                        _buildDetailRow('Court Number', bookingData['selectedCourt'].toString()),
-                        _buildDetailRow('Payment Method', bookingData['selectedPaymentMethod']),
-                        _buildDetailRow('Time', bookingData['selectedTime']),
+                        _buildDetailRow('Court Number', bookingData['selectedCourt']?.toString() ?? 'Not specified'),
+                        _buildDetailRow('Payment Method', bookingData['selectedPaymentMethod'] ?? 'Not specified'),
+                        _buildDetailRow('Time', bookingData['selectedTime'] ?? 'Not specified'),
                         const SizedBox(height: 16),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
                             ElevatedButton(
                               onPressed: () {
-                                updateBookingStatus(bookingId, 'Accepted');
+                                acceptBooking(bookingId, bookingData);
                               },
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.green, // Corrected from 'primary'
+                                backgroundColor: Colors.green,
                                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                               ),
                               child: const Text(
@@ -113,10 +163,10 @@ class BookingDetailPage extends StatelessWidget {
                             ),
                             ElevatedButton(
                               onPressed: () {
-                                updateBookingStatus(bookingId, 'Denied');
+                                denyBooking(bookingId);  // Deny the booking
                               },
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.red, // Corrected from 'primary'
+                                backgroundColor: Colors.red,
                                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                               ),
                               child: const Text(
@@ -139,7 +189,6 @@ class BookingDetailPage extends StatelessWidget {
   }
 
   String _formatDate(dynamic dateField) {
-    // Check if the date is a Timestamp or a String and format accordingly
     if (dateField is Timestamp) {
       return DateFormat.yMMMMd().format(dateField.toDate());
     } else if (dateField is String) {

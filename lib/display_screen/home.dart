@@ -1,11 +1,10 @@
-import 'package:flutter/material.dart'; // Correct import for BookingScreen
-import 'package:newfutsal/display_screen/Kathmandu/BookedScreen.dart'; // Correct import for BookedScreen
+import 'package:flutter/material.dart';
+import 'package:newfutsal/display_screen/Kathmandu/BookedScreen.dart';
 import 'package:newfutsal/display_screen/Lalitpur/bookingscreen3.dart';
 import 'package:newfutsal/display_screen/UserProfile.dart';
 import 'package:newfutsal/display_screen/Bhaktapur/bookingscreen2.dart';
 import '../NavigationBar/UserNavbar.dart';
 import 'package:newfutsal/widget_bar/custom_app_bar.dart';
-
 import 'Kathmandu/booking_screen.dart';
 
 class MyHome extends StatefulWidget {
@@ -36,6 +35,52 @@ class _MyHomeState extends State<MyHome> {
   }
 
   Widget _buildHomeContent() {
+    // List of futsal grounds
+    List<FutsalCard> futsalCards = [
+      FutsalCard(
+        title: 'Kathmandu Futsal',
+        location: 'Nayabazar - Rever Field, KTM',
+        rating: 4.3,
+        price: 500,
+        slots: 2,
+        imageUrl: 'assets/RiverField.png',
+        onTap: () {
+          Navigator.of(context).push(MaterialPageRoute(
+            builder: (context) => BookingScreen(),
+          ));
+        },
+      ),
+      FutsalCard(
+        title: 'Bhaktapur Futsal',
+        location: 'Bhaktapur - Royal Nepal Futsal, BHKT',
+        rating: 4.0,
+        price: 500,
+        slots: 2,
+        imageUrl: 'assets/BhaktapurRoyalNepal.png',
+        onTap: () {
+          Navigator.of(context).push(MaterialPageRoute(
+            builder: (context) => BookingScreen2(),
+          ));
+        },
+      ),
+      FutsalCard(
+        title: 'Lalitpur Futsal',
+        location: 'Lalitpur - FutsalVillage, LALIT',
+        rating: 4.0,
+        price: 500,
+        slots: 2,
+        imageUrl: 'assets/FutsalVillage.png',
+        onTap: () {
+          Navigator.of(context).push(MaterialPageRoute(
+            builder: (context) => BookingScreen3(),
+          ));
+        },
+      ),
+    ];
+
+    // Sorting the futsal cards alphabetically by title
+    futsalCards.sort((a, b) => a.title.compareTo(b.title));
+
     return Column(
       children: [
         Padding(
@@ -66,35 +111,7 @@ class _MyHomeState extends State<MyHome> {
         Expanded(
           child: ListView(
             padding: const EdgeInsets.all(16.0),
-            children: [
-              FutsalCard(
-                title: 'Kathmandu Futsal',
-                location: 'Nayabazar - Rever Field, KTM',
-                rating: 4.3,
-                price: 500,
-                slots: 2,
-                imageUrl: 'assets/RiverField.png', onTap: () { Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => BookingScreen())); },
-              ),
-              FutsalCard(
-                title: 'Bhaktapur Futsal',
-                location: 'Bhaktapur - Royal Nepal Futsal, BHKT',
-                rating: 4.0,
-                price: 500,
-                slots: 2,
-                imageUrl: 'assets/BhaktapurRoyalNepal.png', onTap: () { Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => BookingScreen2())); },
-              ),
-              FutsalCard(
-                title: 'Lalitpur Futsal',
-                location: 'Lalitpur - FutsalVillage, LALIT',
-                rating: 4.0,
-                price: 500,
-                slots: 2,
-                imageUrl: 'assets/FutsalVillage.png', onTap: () { Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => BookingScreen3())); },
-              ),
-            ],
+            children: futsalCards, // Displaying the sorted list of futsal cards
           ),
         ),
       ],
@@ -133,76 +150,38 @@ class FutsalCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-
       child: Card(
         elevation: 5,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ClipRRect(
               borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-              child: Image.asset(
-                imageUrl,
-                height: 200,
-                width: double.infinity,
-                fit: BoxFit.cover,
-              ),
+              child: Image.asset(imageUrl, height: 200, width: double.infinity, fit: BoxFit.cover),
             ),
-            Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Column(
+            ListTile(
+              title: Text(title, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.teal[800])),
+              subtitle: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.teal[800],
-                    ),
-                  ),
-                  SizedBox(height: 5),
                   Row(
                     children: [
                       Icon(Icons.location_on, color: Colors.grey[600], size: 16),
-                      SizedBox(width: 5),
-                      Text(
-                        location,
-                        style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-                      ),
+                      Text(location, style: TextStyle(fontSize: 14, color: Colors.grey[600])),
                     ],
                   ),
-                  SizedBox(height: 5),
                   Row(
                     children: [
                       Icon(Icons.star, color: Colors.amber, size: 16),
-                      SizedBox(width: 5),
-                      Text(
-                        rating.toString(),
-                        style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-                      ),
+                      Text(rating.toString(), style: TextStyle(fontSize: 14, color: Colors.grey[600])),
                       Spacer(),
-                      Text(
-                        'Rs $price/hr',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.teal[800],
-                        ),
-                      ),
+                      Text('Rs $price/hr', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.teal[800])),
                     ],
                   ),
-                  SizedBox(height: 5),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      Text(
-                        '$slots slots available',
-                        style: TextStyle(fontSize: 14, color: Colors.green),
-                      ),
+                      Text('$slots slots available', style: TextStyle(fontSize: 14, color: Colors.green)),
                     ],
                   ),
                 ],
