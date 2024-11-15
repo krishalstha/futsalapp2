@@ -69,36 +69,36 @@ class AdminDashboard extends StatelessWidget {
         color: Colors.deepPurple,
         destination: BookingDetailPage3(), // Ensure you pass a valid documentId here
       ),
-      DashboardItem(
-        icon: Icons.people,
-        label: 'Manage Users',
-        color: Colors.teal,
-        destination: ManageUsers(),
-      ),
+      // DashboardItem(
+      //   icon: Icons.people,
+      //   label: 'Manage Users',
+      //   color: Colors.teal,
+      //   destination: ManageUsers(),
+      // ),
       DashboardItem(
         icon: Icons.calendar_today,
         label: 'Manage Bookings',
         color: Colors.orange,
         destination: ManageBookings(),
       ),
-      DashboardItem(
-        icon: Icons.payment,
-        label: 'Manage Payments',
-        color: Colors.blue,
-        destination: ManagePayments(),
-      ),
+      // DashboardItem(
+      //   icon: Icons.payment,
+      //   label: 'Manage Payments',
+      //   color: Colors.blue,
+      //   destination: ManagePayments(),
+      // ),
       DashboardItem(
         icon: Icons.notifications_active_outlined,
         label: 'Manage Notification',
         color: Colors.blue,
         destination: ManageNotifications(),
       ),
-      DashboardItem(
-        icon: Icons.report,
-        label: 'Reports',
-        color: Colors.redAccent,
-        destination: Reports(),
-      ),
+      // DashboardItem(
+      //   icon: Icons.report,
+      //   label: 'Reports',
+      //   color: Colors.redAccent,
+      //   destination: Reports(),
+      // ),
       DashboardItem(
         icon: Icons.settings,
         label: 'Settings',

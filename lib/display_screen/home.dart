@@ -16,6 +16,8 @@ class MyHome extends StatefulWidget {
 
 class _MyHomeState extends State<MyHome> {
   int _selectedIndex = 0;
+  TextEditingController _searchController = TextEditingController();
+  String _searchText = '';
 
   void _onItemTapped(int index) {
     setState(() {
@@ -78,8 +80,11 @@ class _MyHomeState extends State<MyHome> {
       ),
     ];
 
-    // Sorting the futsal cards alphabetically by title
-    futsalCards.sort((a, b) => a.title.compareTo(b.title));
+    // Filtering the futsal cards based on search text
+    List<FutsalCard> filteredFutsalCards = futsalCards
+        .where((futsal) =>
+        futsal.title.toLowerCase().contains(_searchText.toLowerCase()))
+        .toList();
 
     return Column(
       children: [
@@ -99,19 +104,25 @@ class _MyHomeState extends State<MyHome> {
               ],
             ),
             child: TextField(
+              controller: _searchController,
               decoration: InputDecoration(
                 hintText: 'Search futsal grounds',
                 prefixIcon: Icon(Icons.search),
                 border: InputBorder.none,
                 contentPadding: EdgeInsets.all(12),
               ),
+              onChanged: (value) {
+                setState(() {
+                  _searchText = value;
+                });
+              },
             ),
           ),
         ),
         Expanded(
           child: ListView(
             padding: const EdgeInsets.all(16.0),
-            children: futsalCards, // Displaying the sorted list of futsal cards
+            children: filteredFutsalCards, // Displaying the filtered list of futsal cards
           ),
         ),
       ],
@@ -126,6 +137,7 @@ class _MyHomeState extends State<MyHome> {
     );
   }
 }
+
 
 class FutsalCard extends StatelessWidget {
   final String title;

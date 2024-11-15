@@ -17,7 +17,7 @@ class _BookingScreenState extends State<BookingScreen> {
   TimeOfDay selectedTime = TimeOfDay(hour: 21, minute: 0);
   int selectedLength = 60;
   int selectedCourt = 2;
-  String selectedPaymentMethod = 'Credit card';
+  String selectedPaymentMethod = 'Cash';
   bool isBooking = false;
   bool showLoading = false;
 
@@ -307,7 +307,7 @@ class _BookingScreenState extends State<BookingScreen> {
           value: selectedPaymentMethod,
           items: [
             DropdownMenuItem(value: 'Cash', child: Text('Cash')),
-            DropdownMenuItem(value: 'Credit card', child: Text('Credit card')),
+            // DropdownMenuItem(value: 'Credit card', child: Text('Credit card')),
           ],
           onChanged: (String? value) {
             setState(() {
