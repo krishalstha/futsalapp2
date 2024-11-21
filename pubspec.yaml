@@ -39,7 +39,7 @@ dev_dependencies:
 flutter_icons:
   android: true
   ios: true
-  image_path: "assets/LOGO.jpg"
+  image_path: "assets/footsal.png"
 
   flutter_lints: ^3.0.0
 
