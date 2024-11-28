@@ -93,12 +93,12 @@ class AdminDashboard extends StatelessWidget {
         color: Colors.blue,
         destination: ManageNotifications(),
       ),
-      // DashboardItem(
-      //   icon: Icons.report,
-      //   label: 'Reports',
-      //   color: Colors.redAccent,
-      //   destination: Reports(),
-      // ),
+      DashboardItem(
+        icon: Icons.add,
+        label: 'AddFutsal',
+        color: Colors.redAccent,
+        destination: AddFutsalScreen(),
+      ),
       DashboardItem(
         icon: Icons.settings,
         label: 'Settings',
