@@ -1,97 +1,72 @@
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:intl/intl.dart';
 
-class BookingDetailPage extends StatefulWidget {
-  const BookingDetailPage({Key? key}) : super(key: key);
+class DetailBookingScreen extends StatefulWidget {
+  const DetailBookingScreen({super.key});
 
   @override
-  _BookingDetailPageState createState() => _BookingDetailPageState();
+  _DetailBookingScreenState createState() => _DetailBookingScreenState();
 }
 
-class _BookingDetailPageState extends State<BookingDetailPage> {
-  Future<List<Map<String, dynamic>>> fetchBookingDetails() async {
+class _DetailBookingScreenState extends State<DetailBookingScreen> {
+  late String currentAdminUid;
+
+  // Initialize the admin UID from Firebase Authentication
+  @override
+  void initState() {
+    super.initState();
+    currentAdminUid = FirebaseAuth.instance.currentUser!.uid; // Fetch the current user's UID
+  }
+
+  // Function to fetch bookings for the current admin
+  Future<List<Map<String, dynamic>>> _fetchAdminBookings() async {
     try {
-      final currentUser = FirebaseAuth.instance.currentUser;
-      if (currentUser == null) {
-        print("User not logged in");
-        return [];
-      }
-
-      String userId = currentUser.uid;
-
-      QuerySnapshot snapshot = await FirebaseFirestore.instance
-          .collection('bookingcort')
-          .where('userId', isEqualTo: userId)
+      // Fetch all bookings where the 'adminUid' matches the current admin's UID
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('bookings')
+          .where('adminUid', isEqualTo: currentAdminUid)
           .get();
 
-      if (snapshot.docs.isNotEmpty) {
-        return snapshot.docs.map((doc) {
-          Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-          data['bookingId'] = doc.id;
-          return data;
-        }).toList();
-      } else {
-        print("No bookings found for this user.");
-        return [];
-      }
+      // Return the list of booking documents as a list of maps
+      return querySnapshot.docs.map((doc) {
+        return doc.data() as Map<String, dynamic>;
+      }).toList();
     } catch (e) {
-      print("Error fetching booking details: $e");
+      print('Error fetching admin bookings: $e');
       return [];
     }
   }
 
-  Future<void> acceptBooking(String bookingId, Map<String, dynamic> bookingData) async {
+  // Function to accept a booking
+  Future<void> _acceptBooking(String bookingId) async {
     try {
-      await FirebaseFirestore.instance.collection('Kathmandudetails').add(bookingData);
-
-      await showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Booking Accepted'),
-          content: const Text('The booking has been accepted successfully.'),
-          actions: [
-            TextButton(
-              onPressed: () async {
-                Navigator.of(context).pop();
-                await FirebaseFirestore.instance.collection('bookingcort').doc(bookingId).delete();
-                setState(() {});
-              },
-              child: const Text('OK'),
-            ),
-          ],
-        ),
+      await FirebaseFirestore.instance.collection('bookings').doc(bookingId).update({
+        'status': 'Accepted',
+        'acceptedAt': FieldValue.serverTimestamp(),
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Booking accepted')),
       );
+      setState(() {}); // Refresh the UI to reflect the change
     } catch (e) {
-      print("Error accepting booking: $e");
+      print('Error accepting booking: $e');
     }
   }
 
-  Future<void> denyBooking(String bookingId) async {
+  // Function to reject a booking
+  Future<void> _rejectBooking(String bookingId) async {
     try {
-      // Remove booking from the 'bookingcort' collection
-      await FirebaseFirestore.instance.collection('bookingcort').doc(bookingId).delete();
-
-      // Show a confirmation dialog
-      await showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Booking Denied'),
-          content: const Text('The booking has been denied and removed from the database.'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                setState(() {});
-              },
-              child: const Text('OK'),
-            ),
-          ],
-        ),
+      await FirebaseFirestore.instance.collection('bookings').doc(bookingId).update({
+        'status': 'Rejected',
+        'rejectedAt': FieldValue.serverTimestamp(),
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Booking rejected')),
       );
+      setState(() {}); // Refresh the UI to reflect the change
     } catch (e) {
-      print("Error denying booking: $e");
+      print('Error rejecting booking: $e');
     }
   }
 
@@ -99,132 +74,79 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Booking Details',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
-        ),
-        backgroundColor: Colors.teal.shade700,
+        title: const Text('Manage Bookings'),
+        backgroundColor: Colors.teal,
       ),
       body: FutureBuilder<List<Map<String, dynamic>>>(
-        future: fetchBookingDetails(),
+        future: _fetchAdminBookings(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError || !snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text(" NO booking details"));
+          } else if (snapshot.hasError) {
+            return const Center(child: Text('Error fetching bookings'));
+          } else if (snapshot.data == null || snapshot.data!.isEmpty) {
+            return const Center(child: Text('No bookings available'));
           }
 
-          final bookingDataList = snapshot.data!;
-          return Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: ListView.builder(
-              itemCount: bookingDataList.length,
-              itemBuilder: (context, index) {
-                final bookingData = bookingDataList[index];
-                final bookingId = bookingData['bookingId'] ?? 'No ID';
+          final bookings = snapshot.data!;
 
-                return Card(
-                  elevation: 4.0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16.0),
-                  ),
-                  shadowColor: Colors.tealAccent,
-                  child: Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildDetailRow('Futsal', bookingData['futsal'] ?? 'Not specified'),
-                        _buildDetailRow('Location', bookingData['location'] ?? 'Not specified'),
-                        _buildDetailRow('Phone', bookingData['phone'] ?? 'Not specified'),
-                        _buildDetailRow(
-                          'Date',
-                          _formatDate(bookingData['selectedDate']),
-                        ),
-                        _buildDetailRow('Court Number', bookingData['selectedCourt']?.toString() ?? 'Not specified'),
-                        _buildDetailRow('Payment Method', bookingData['selectedPaymentMethod'] ?? 'Not specified'),
-                        _buildDetailRow('Time', bookingData['selectedTime'] ?? 'Not specified'),
-                        const SizedBox(height: 16),
+          return ListView.builder(
+            itemCount: bookings.length,
+            itemBuilder: (context, index) {
+              final booking = bookings[index];
+              final bookingId = booking['bookingsId'];
+              final userPhoneNumber = booking['phoneNumber'];
+              final selectedDate = booking['date'];
+              final selectedTime = booking['time'];
+              final selectedCourt = booking['court'];
+              final selectedDuration = booking['duration'];
+              final selectedPaymentMethod = booking['paymentMethod'];
+              final status = booking['status'] ?? 'Pending';
+
+              return Card(
+                margin: const EdgeInsets.all(10),
+                elevation: 5,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Booking ID: $bookingId', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 8),
+                      Text('Phone Number: $userPhoneNumber'),
+                      Text('Date: $selectedDate'),
+                      Text('Time: $selectedTime'),
+                      Text('Court: $selectedCourt'),
+                      Text('Duration: $selectedDuration'),
+                      Text('Payment Method: $selectedPaymentMethod'),
+                      const SizedBox(height: 16),
+                      Text('Status: $status', style: TextStyle(color: status == 'Accepted' ? Colors.green : Colors.red)),
+                      const SizedBox(height: 16),
+                      if (status == 'Pending') ...[
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
                             ElevatedButton(
-                              onPressed: () {
-                                acceptBooking(bookingId, bookingData);
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.green,
-                                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                              ),
-                              child: const Text(
-                                'Accept',
-                                style: TextStyle(fontSize: 16),
-                              ),
+                              onPressed: () => _acceptBooking(bookingId),
+                              child: const Text('Accept'),
+                              style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
                             ),
                             ElevatedButton(
-                              onPressed: () {
-                                denyBooking(bookingId);  // Deny the booking
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.red,
-                                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                              ),
-                              child: const Text(
-                                'Deny',
-                                style: TextStyle(fontSize: 16),
-                              ),
+                              onPressed: () => _rejectBooking(bookingId),
+                              child: const Text('Reject'),
+                              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
                             ),
                           ],
                         ),
                       ],
-                    ),
+                    ],
                   ),
-                );
-              },
-            ),
+                ),
+              );
+            },
           );
         },
       ),
-    );
-  }
-
-  String _formatDate(dynamic dateField) {
-    if (dateField is Timestamp) {
-      return DateFormat.yMMMMd().format(dateField.toDate());
-    } else if (dateField is String) {
-      try {
-        DateTime parsedDate = DateTime.parse(dateField);
-        return DateFormat.yMMMMd().format(parsedDate);
-      } catch (e) {
-        return 'Invalid date format';
-      }
-    } else {
-      return 'Invalid date';
-    }
-  }
-
-  Widget _buildDetailRow(String title, String value) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: Colors.grey.shade700,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        const Divider(thickness: 1.5, height: 20),
-      ],
     );
   }
 }

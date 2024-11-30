@@ -17,6 +17,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _locationController = TextEditingController();
 
   String _selectedRole = 'User';
 
@@ -36,6 +37,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
           'full_name': _fullNameController.text.trim(),
           'email': _emailController.text.trim(),
           'phone': _phoneController.text.trim(),
+          'location': _locationController.text.trim(), // Save the location
         });
 
         showDialog(
@@ -61,6 +63,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
         _emailController.clear();
         _phoneController.clear();
         _passwordController.clear();
+        _locationController.clear();
       } on FirebaseAuthException catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(e.message ?? 'Registration failed')),
@@ -101,7 +104,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
           Container(
             decoration: BoxDecoration(
               image: DecorationImage(
-                image: AssetImage("assets/ground.jpg"), // Ensure this path is correct
+                image: AssetImage("assets/ground.jpg"),
                 fit: BoxFit.cover,
               ),
             ),
@@ -205,6 +208,21 @@ class _RegistrationPageState extends State<RegistrationPage> {
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return 'Please enter your password';
+                            }
+                            return null;
+                          },
+                        ),
+                        SizedBox(height: 15),
+                        TextFormField(
+                          controller: _locationController,
+                          decoration: InputDecoration(
+                            labelText: "Location",
+                            filled: true,
+                            fillColor: Colors.transparent,
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter your location';
                             }
                             return null;
                           },

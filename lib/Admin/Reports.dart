@@ -1,8 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:http/http.dart'as http;
+import 'package:http/http.dart' as http;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -19,41 +20,76 @@ class _AddFutsalScreenState extends State<AddFutsalScreen> {
 
   File? _imageFile;
   bool _isLoading = false;
+  List<File> _imageFiles = [];
+  String? _location;
+  String? _adminUid;
 
-  Future<void> _pickImage() async {
-    final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
+  @override
+  void initState() {
+    super.initState();
+    _getAdminLocation();
+  }
+
+  // Fetch admin location from Firestore
+  Future<void> _getAdminLocation() async {
+    try {
+      final user = FirebaseFirestore.instance.collection('Users').doc(FirebaseAuth.instance.currentUser?.uid);
+      final userDoc = await user.get();
       setState(() {
-        _imageFile = File(pickedFile.path);
+        _location = userDoc['location'];
+        _adminUid = FirebaseAuth.instance.currentUser?.uid;
+      });
+    } catch (e) {
+      print('Error fetching admin location: $e');
+    }
+  }
+
+  // Image picker to select multiple images
+  Future<void> _pickImages() async {
+    final pickedFiles = await ImagePicker().pickMultiImage();
+    if (pickedFiles != null && pickedFiles.isNotEmpty) {
+      setState(() {
+        _imageFiles = pickedFiles.map((pickedFile) => File(pickedFile.path)).toList();
       });
     }
   }
 
-  Future<String?> _uploadImage(File image) async {
+  // Upload multiple images to imgBB
+  Future<List<String>> _uploadImages(List<File> images) async {
+    List<String> imageUrls = [];
     try {
-      final uri = Uri.parse("https://api.imgbb.com/1/upload?key=431e010fb1591bffe80f792f64ce75b6");
-      var request = http.MultipartRequest('POST', uri);
-      request.files.add(await http.MultipartFile.fromPath('image', image.path));
+      for (var image in images) {
+        final uri = Uri.parse("https://api.imgbb.com/1/upload?key=431e010fb1591bffe80f792f64ce75b6");
+        var request = http.MultipartRequest('POST', uri);
+        request.files.add(await http.MultipartFile.fromPath('image', image.path));
 
-      final response = await request.send();
-      if (response.statusCode == 200) {
-        final responseData = await response.stream.bytesToString();
-        final jsonResponse = json.decode(responseData);
-        return jsonResponse['data']['url'];
-      } else {
-        print('Error uploading image: ${response.reasonPhrase}');
-        return null;
+        final response = await request.send();
+        if (response.statusCode == 200) {
+          final responseData = await response.stream.bytesToString();
+          final jsonResponse = json.decode(responseData);
+          imageUrls.add(jsonResponse['data']['url']);
+        } else {
+          print('Error uploading image: ${response.reasonPhrase}');
+        }
       }
     } catch (e) {
-      print('Error: $e');
-      return null;
+      print('Error uploading images: $e');
     }
+    return imageUrls;
   }
 
+  // Add futsal to Firestore with location and multiple images
   Future<void> _addFutsal() async {
-    if (!_formKey.currentState!.validate() || _imageFile == null) {
+    if (!_formKey.currentState!.validate() || _imageFiles.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please complete all fields and select an image')),
+        SnackBar(content: Text('Please complete all fields and select images')),
+      );
+      return;
+    }
+
+    if (_adminUid == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Admin is not authenticated')),
       );
       return;
     }
@@ -63,25 +99,41 @@ class _AddFutsalScreenState extends State<AddFutsalScreen> {
     });
 
     try {
-      final imageUrl = await _uploadImage(_imageFile!);
+      // Check if the admin already has a futsal added
+      final futsalSnapshot = await FirebaseFirestore.instance
+          .collection('futsals')
+          .where('adminUid', isEqualTo: _adminUid)
+          .get();
 
-      if (imageUrl != null) {
-        await FirebaseFirestore.instance.collection('futsals').add({
-          'name': _nameController.text.trim(),
-          'price': double.parse(_priceController.text.trim()),
-          'slots': int.parse(_slotsController.text.trim()),
-          'image': imageUrl,
-        });
-
+      if (futsalSnapshot.docs.isNotEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Futsal added successfully')),
+          SnackBar(content: Text('You can only add one futsal')),
         );
-
-        _formKey.currentState!.reset();
-        setState(() {
-          _imageFile = null;
-        });
+        return;
       }
+
+      // Upload images
+      final imageUrls = await _uploadImages(_imageFiles);
+
+      // Add futsal to Firestore
+      await FirebaseFirestore.instance.collection('futsals').add({
+        'name': _nameController.text.trim(),
+        'price': double.parse(_priceController.text.trim()),
+        'slots': int.parse(_slotsController.text.trim()),
+        'location': _location,
+        'adminUid': _adminUid,
+        'images': imageUrls,
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Futsal added successfully')),
+      );
+
+      // Reset the form
+      _formKey.currentState!.reset();
+      setState(() {
+        _imageFiles.clear();
+      });
     } catch (e) {
       print('Error adding futsal: $e');
       ScaffoldMessenger.of(context).showSnackBar(
@@ -147,13 +199,29 @@ class _AddFutsalScreenState extends State<AddFutsalScreen> {
                   },
                 ),
                 SizedBox(height: 16),
-                _imageFile != null
-                    ? Image.file(_imageFile!, height: 150, fit: BoxFit.cover)
-                    : Text('No image selected'),
+                _imageFiles.isNotEmpty
+                    ? GridView.builder(
+                  shrinkWrap: true,
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3,
+                    crossAxisSpacing: 8,
+                    mainAxisSpacing: 8,
+                  ),
+                  itemCount: _imageFiles.length,
+                  itemBuilder: (context, index) {
+                    return Image.file(
+                      _imageFiles[index],
+                      height: 100,
+                      width: 100,
+                      fit: BoxFit.cover,
+                    );
+                  },
+                )
+                    : Text('No images selected'),
                 ElevatedButton.icon(
-                  onPressed: _pickImage,
+                  onPressed: _pickImages,
                   icon: Icon(Icons.image),
-                  label: Text('Select Image'),
+                  label: Text('Select Images'),
                 ),
                 SizedBox(height: 20),
                 _isLoading

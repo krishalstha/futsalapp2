@@ -16,7 +16,6 @@ Map<String, WidgetBuilder> appRoutes = {
   'admin': (context) => AdminDashboard(),
   'navbar': (context) => UserNavigationMenu(),
   'home': (context) => MyHome(),
-  'BookingScreen': (context) => BookingScreen(),
-  'BookedScreen': (context) => BookedScreen(),
+   'BookedScreen': (context) => BookedScreen(),
   'UserProfile': (context) => UserProfile(),
 };

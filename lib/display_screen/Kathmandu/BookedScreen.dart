@@ -19,7 +19,7 @@ class BookedScreen extends StatelessWidget {
       body: StreamBuilder<QuerySnapshot>(
         // Stream the bookings for the current user only
         stream: FirebaseFirestore.instance
-            .collection('bookingcort')
+            .collection('bookings')
             .where('userId', isEqualTo: userId)
             .snapshots(),
         builder: (context, snapshot) {
@@ -54,7 +54,7 @@ class BookedScreen extends StatelessWidget {
                         style: TextStyle(fontSize: 16),
                       ),
                       Text(
-                        'Futsal: ${booking['futsal']}',
+                        'Futsal: ${booking['futsalId']}',
                         style: TextStyle(fontSize: 16),
                       ),
                       Text(
@@ -62,27 +62,27 @@ class BookedScreen extends StatelessWidget {
                         style: TextStyle(fontSize: 16),
                       ),
                       Text(
-                        'Date: ${DateTime.parse(booking['selectedDate']).toLocal().toString().split(' ')[0]}',
+                        'Date: ${DateTime.parse(booking['date']).toLocal().toString().split(' ')[0]}',
                         style: TextStyle(fontSize: 16),
                       ),
                       Text(
-                        'Time: ${booking['selectedTime']}',
+                        'Time: ${booking['time']}',
                         style: TextStyle(fontSize: 16),
                       ),
                       Text(
-                        'Duration: ${booking['selectedLength']} minutes',
+                        'Duration: ${booking['duration']} minutes',
                         style: TextStyle(fontSize: 16),
                       ),
                       Text(
-                        'Court: Court ${booking['selectedCourt']}',
+                        'Court: Court ${booking['court']}',
                         style: TextStyle(fontSize: 16),
                       ),
                       Text(
-                        'Payment Method: ${booking['selectedPaymentMethod']}',
+                        'Payment Method: ${booking['paymentMethod']}',
                         style: TextStyle(fontSize: 16),
                       ),
                       Text(
-                        'Phone: ${booking['phone']}',
+                        'Phone: ${booking['phoneNumber']}',
                         style: TextStyle(fontSize: 16),
                       ),
                     ],
