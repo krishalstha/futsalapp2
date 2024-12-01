@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:newfutsal/Admin/send_notifiaction.dart';
 
 class ManageNotifications extends StatefulWidget {
@@ -7,23 +8,16 @@ class ManageNotifications extends StatefulWidget {
 }
 
 class _ManageNotificationsState extends State<ManageNotifications> {
-  final List<String> _notifications = [
-    "New booking for Court 1 at 10 AM",
-    "User JohnDoe canceled their booking",
-    "Payment received from JaneDoe",
-    "Court 2 maintenance scheduled for 3 PM",
-  ];
-
-  void _addNotification(String message) {
-    setState(() {
-      _notifications.add(message);
-    });
-  }
-
-  void _deleteNotification(int index) {
-    setState(() {
-      _notifications.removeAt(index);
-    });
+  // Save notification to Firestore
+  Future<void> _addNotification(String message) async {
+    try {
+      await FirebaseFirestore.instance.collection('notifications').add({
+        'message': message,
+        'timestamp': Timestamp.now(),
+      });
+    } catch (e) {
+      print("Error adding notification: $e");
+    }
   }
 
   void _navigateToSendNotification() {
@@ -50,48 +44,105 @@ class _ManageNotificationsState extends State<ManageNotifications> {
         backgroundColor: Colors.teal.shade700,
         child: const Icon(Icons.add),
       ),
-      body: _notifications.isEmpty
-          ? Center(
-        child: Text(
-          "No notifications available",
-          style: TextStyle(fontSize: 18, color: Colors.grey.shade600),
-        ),
-      )
-          : ListView.builder(
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-        itemCount: _notifications.length,
-        itemBuilder: (context, index) {
-          return Dismissible(
-            key: UniqueKey(),
-            onDismissed: (direction) => _deleteNotification(index),
-            background: Container(
-              alignment: Alignment.centerRight,
-              padding: const EdgeInsets.only(right: 20),
-              color: Colors.redAccent,
-              child: const Icon(Icons.delete, color: Colors.white),
-            ),
-            child: Card(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection('notifications')
+            .orderBy('timestamp', descending: true)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(
+              child: Text(
+                "Failed to load notifications",
+                style: TextStyle(fontSize: 18, color: Colors.redAccent),
               ),
-              margin: const EdgeInsets.symmetric(vertical: 8),
-              elevation: 3,
-              child: ListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                leading: CircleAvatar(
-                  backgroundColor: Colors.teal.shade100,
-                  child: const Icon(Icons.notifications, color: Colors.teal),
-                ),
-                title: Text(
-                  _notifications[index],
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                ),
-                trailing: IconButton(
-                  icon: const Icon(Icons.delete, color: Colors.redAccent),
-                  onPressed: () => _deleteNotification(index),
-                ),
+            );
+          } else if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return Center(
+              child: Text(
+                "No notifications available",
+                style: TextStyle(fontSize: 18, color: Colors.grey.shade600),
               ),
-            ),
+            );
+          }
+
+          final notifications = snapshot.data!.docs;
+
+          return ListView.builder(
+            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+            itemCount: notifications.length,
+            itemBuilder: (context, index) {
+              final notification = notifications[index];
+              final data = notification.data() as Map<String, dynamic>;
+              final message = data['message'] ?? 'No message';
+              final timestamp = data['timestamp'] as Timestamp;
+              final date = timestamp.toDate();
+              final formattedDate =
+                  "${date.month}/${date.day}/${date.year} ${date.hour}:${date.minute}";
+
+              return Dismissible(
+                key: Key(notification.id),
+                onDismissed: (direction) async {
+                  try {
+                    print("Deleting notification with ID: ${notification.id}");
+                    await FirebaseFirestore.instance
+                        .collection('notifications')
+                        .doc(notification.id)
+                        .delete();
+                    print("Notification deleted successfully");
+                  } catch (e) {
+                    print("Error deleting notification: $e");
+                  }
+                },
+                background: Container(
+                  alignment: Alignment.centerRight,
+                  padding: const EdgeInsets.only(right: 20),
+                  color: Colors.redAccent,
+                  child: const Icon(Icons.delete, color: Colors.white),
+                ),
+                child: Card(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  margin: const EdgeInsets.symmetric(vertical: 8),
+                  elevation: 3,
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 10),
+                    leading: CircleAvatar(
+                      backgroundColor: Colors.teal.shade100,
+                      child: const Icon(Icons.notifications, color: Colors.teal),
+                    ),
+                    title: Text(
+                      message,
+                      style: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.w500),
+                    ),
+                    subtitle: Text(
+                      'Sent on: $formattedDate',
+                      style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                    ),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.redAccent),
+                      onPressed: () async {
+                        try {
+                          print("Deleting notification with ID: ${notification.id}");
+                          await FirebaseFirestore.instance
+                              .collection('notifications')
+                              .doc(notification.id)
+                              .delete();
+                          print("Notification deleted successfully");
+                        } catch (e) {
+                          print("Error deleting notification: $e");
+                        }
+                      },
+                    ),
+                  ),
+                ),
+              );
+            },
           );
         },
       ),

@@ -308,7 +308,7 @@ class _BookingScreenState extends State<BookingScreen> {
                         selectedPaymentMethod = newValue!;
                       });
                     },
-                    items: <String>['Cash', 'Online Payment']
+                    items: <String>['Cash']
                         .map<DropdownMenuItem<String>>((String value) {
                       return DropdownMenuItem<String>(
                         value: value,
@@ -320,10 +320,24 @@ class _BookingScreenState extends State<BookingScreen> {
                   TextFormField(
                     controller: phoneController,
                     decoration: InputDecoration(
-                      labelText: 'Phone Number',
-                      prefixIcon: Icon(Icons.phone),
+                      labelText: "Phone",
+                      filled: true,
+                      fillColor: Colors.transparent,
                     ),
                     keyboardType: TextInputType.phone,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly, // Only allows digits
+                      LengthLimitingTextInputFormatter(10), // Limits input to 10 characters
+                    ],
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your phone number';
+                      }
+                      if (value.length != 10) {
+                        return 'Phone number must be 10 digits long';
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 16),
                   // Book button

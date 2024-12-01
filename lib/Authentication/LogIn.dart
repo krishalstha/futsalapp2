@@ -14,7 +14,6 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
-
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
@@ -22,6 +21,7 @@ class _LoginPageState extends State<LoginPage> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   String _selectedRole = 'User'; // Default selection
+  bool _obscurePassword = true; // Moved to class level
 
   Future<void> _loginUser() async {
     if (_formKey.currentState!.validate()) {
@@ -59,13 +59,13 @@ class _LoginPageState extends State<LoginPage> {
       }
     }
   }
+
   void _navigateToSignup() {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => RegistrationPage()),
     );
   }
-
 
   void _resetPassword() {
     Navigator.push(
@@ -150,8 +150,18 @@ class _LoginPageState extends State<LoginPage> {
                           decoration: InputDecoration(
                             labelText: "Password",
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  _obscurePassword = !_obscurePassword;
+                                });
+                              },
+                            ),
                           ),
-                          obscureText: true,
+                          obscureText: _obscurePassword,
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return 'Please enter your password';
@@ -172,7 +182,10 @@ class _LoginPageState extends State<LoginPage> {
                                 borderRadius: BorderRadius.circular(10),
                               ),
                             ),
-                            child: Text("Login", style: TextStyle(fontSize: 16),),
+                            child: Text(
+                              "Login",
+                              style: TextStyle(fontSize: 16),
+                            ),
                           ),
                         ),
                         SizedBox(height: 10),

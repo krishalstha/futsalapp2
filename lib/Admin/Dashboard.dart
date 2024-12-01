@@ -92,7 +92,7 @@ class AdminDashboard extends StatelessWidget {
         icon: Icons.settings,
         label: 'Settings',
         color: Colors.green,
-        destination: Settings(),
+        destination: AdminProfile(),
       ),
     ];
 

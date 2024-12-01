@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../Admin/Dashboard.dart';
 import '../NavigationBar/UserNavbar.dart';
@@ -98,7 +99,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
     final padding = mediaQuery.size.width * 0.08;
 
     return Scaffold(
-      appBar: AppBar(title: Text("User Registration")),
+
       body: Stack(
         children: [
           Container(
@@ -189,9 +190,16 @@ class _RegistrationPageState extends State<RegistrationPage> {
                             fillColor: Colors.transparent,
                           ),
                           keyboardType: TextInputType.phone,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly, // Only allows digits
+                            LengthLimitingTextInputFormatter(10), // Limits input to 10 characters
+                          ],
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return 'Please enter your phone number';
+                            }
+                            if (value.length != 10) {
+                              return 'Phone number must be 10 digits long';
                             }
                             return null;
                           },
