@@ -1,49 +1,82 @@
 import 'package:flutter/material.dart';
-import 'Kathmandu/AcceptedDetail.dart';
- // Import the BookingScreen
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ManageBookings extends StatelessWidget {
+  const ManageBookings({super.key});
+
+  Future<List<Map<String, dynamic>>> _fetchAcceptedBookings() async {
+    try {
+      // Fetch all documents from the 'acceptedBookings' collection
+      final querySnapshot = await FirebaseFirestore.instance.collection('acceptedBookings').get();
+
+      // Convert the documents into a list of maps
+      return querySnapshot.docs.map((doc) {
+        return doc.data() as Map<String, dynamic>;
+      }).toList();
+    } catch (e) {
+      print('Error fetching accepted bookings: $e');
+      return [];
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Manage Bookings'),
-        backgroundColor: Colors.orange,
+        title: const Text('Accepted Bookings'),
+        backgroundColor: Colors.teal,
       ),
-      body: ListView(
-        children: [
-          // Booking Details Card
-          _buildCard(
-            context,
-            'Accepted Details',
-                () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => DetailsKathmandu())
-            ),
-          ),
-          // Upcoming Bookings Card
+      body: FutureBuilder<List<Map<String, dynamic>>>(
+        future: _fetchAcceptedBookings(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return const Center(child: Text('Error fetching bookings'));
+          } else if (snapshot.data == null || snapshot.data!.isEmpty) {
+            return const Center(child: Text('No accepted bookings found'));
+          }
 
-          // Cancel Booking Card
+          final acceptedBookings = snapshot.data!;
 
-        ],
-      ),
-    );
-  }
+          return ListView.builder(
+            itemCount: acceptedBookings.length,
+            itemBuilder: (context, index) {
+              final booking = acceptedBookings[index];
+              final userPhoneNumber = booking['phoneNumber'];
+              final selectedDate = booking['date'];
+              final selectedTime = booking['time'];
+              final selectedCourt = booking['court'];
+              final selectedDuration = booking['duration'];
+              final selectedPaymentMethod = booking['paymentMethod'];
+              final acceptedAt = booking['acceptedAt'] != null
+                  ? (booking['acceptedAt'] as Timestamp).toDate()
+                  : null;
 
-  // Helper function to build a card with onTap navigation
-  Widget _buildCard(BuildContext context, String title, Function() onTap) {
-    return Card(
-      elevation: 4.0,
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.all(16.0),
-        title: Text(
-          title,
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        onTap: onTap,  // Use the onTap function directly here
+              return Card(
+                margin: const EdgeInsets.all(10),
+                elevation: 5,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Phone Number: $userPhoneNumber', style: const TextStyle(fontSize: 16)),
+                      const SizedBox(height: 8),
+                      Text('Date: $selectedDate'),
+                      Text('Time: $selectedTime'),
+                      Text('Court: $selectedCourt'),
+                      Text('Duration: $selectedDuration'),
+                      Text('Payment Method: $selectedPaymentMethod'),
+                      if (acceptedAt != null)
+                        Text('Accepted At: ${acceptedAt.toLocal()}'),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+        },
       ),
     );
   }

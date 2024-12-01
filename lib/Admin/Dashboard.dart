@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import '../Authentication/LogIn.dart';
 import 'Kathmandu/futsal_detail.dart';
+import 'editfutsal.dart';
 import 'manage_notification.dart';
 import 'manage_users.dart';
 import 'manage_bookings.dart';
@@ -93,6 +94,12 @@ class AdminDashboard extends StatelessWidget {
         label: 'Settings',
         color: Colors.green,
         destination: AdminProfile(),
+      ),
+      DashboardItem(
+        icon: Icons.edit,
+        label: 'Edit',
+        color: Colors.green,
+        destination: EditFutsalScreen(),
       ),
     ];
 

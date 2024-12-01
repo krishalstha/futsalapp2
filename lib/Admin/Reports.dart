@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
@@ -18,43 +17,46 @@ class _AddFutsalScreenState extends State<AddFutsalScreen> {
   final TextEditingController _priceController = TextEditingController();
   final TextEditingController _slotsController = TextEditingController();
 
-  File? _imageFile;
-  bool _isLoading = false;
   List<File> _imageFiles = [];
+  bool _isLoading = false;
   String? _location;
   String? _adminUid;
 
   @override
   void initState() {
     super.initState();
-    _getAdminLocation();
+    _getAdminDetails();
   }
 
-  // Fetch admin location from Firestore
-  Future<void> _getAdminLocation() async {
+  // Fetch admin details, including location and UID
+  Future<void> _getAdminDetails() async {
     try {
-      final user = FirebaseFirestore.instance.collection('Users').doc(FirebaseAuth.instance.currentUser?.uid);
-      final userDoc = await user.get();
+      final userUid = FirebaseAuth.instance.currentUser?.uid;
+      if (userUid == null) throw Exception("Admin not authenticated");
+
+      final userDoc =
+      await FirebaseFirestore.instance.collection('Users').doc(userUid).get();
+
       setState(() {
         _location = userDoc['location'];
-        _adminUid = FirebaseAuth.instance.currentUser?.uid;
+        _adminUid = userUid;
       });
     } catch (e) {
-      print('Error fetching admin location: $e');
+      print('Error fetching admin details: $e');
     }
   }
 
-  // Image picker to select multiple images
+  // Image picker for selecting multiple images
   Future<void> _pickImages() async {
     final pickedFiles = await ImagePicker().pickMultiImage();
     if (pickedFiles != null && pickedFiles.isNotEmpty) {
       setState(() {
-        _imageFiles = pickedFiles.map((pickedFile) => File(pickedFile.path)).toList();
+        _imageFiles = pickedFiles.map((file) => File(file.path)).toList();
       });
     }
   }
 
-  // Upload multiple images to imgBB
+  // Upload images to imgBB and return URLs
   Future<List<String>> _uploadImages(List<File> images) async {
     List<String> imageUrls = [];
     try {
@@ -78,18 +80,18 @@ class _AddFutsalScreenState extends State<AddFutsalScreen> {
     return imageUrls;
   }
 
-  // Add futsal to Firestore with location and multiple images
+  // Add futsal to Firestore
   Future<void> _addFutsal() async {
     if (!_formKey.currentState!.validate() || _imageFiles.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please complete all fields and select images')),
+        const SnackBar(content: Text('Please complete all fields and select images')),
       );
       return;
     }
 
     if (_adminUid == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Admin is not authenticated')),
+        const SnackBar(content: Text('Admin is not authenticated')),
       );
       return;
     }
@@ -99,7 +101,7 @@ class _AddFutsalScreenState extends State<AddFutsalScreen> {
     });
 
     try {
-      // Check if the admin already has a futsal added
+      // Check if admin already has a futsal
       final futsalSnapshot = await FirebaseFirestore.instance
           .collection('futsals')
           .where('adminUid', isEqualTo: _adminUid)
@@ -107,7 +109,7 @@ class _AddFutsalScreenState extends State<AddFutsalScreen> {
 
       if (futsalSnapshot.docs.isNotEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('You can only add one futsal')),
+          const SnackBar(content: Text('You can only add one futsal')),
         );
         return;
       }
@@ -123,10 +125,11 @@ class _AddFutsalScreenState extends State<AddFutsalScreen> {
         'location': _location,
         'adminUid': _adminUid,
         'images': imageUrls,
+        'createdAt': FieldValue.serverTimestamp(),
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Futsal added successfully')),
+        const SnackBar(content: Text('Futsal added successfully')),
       );
 
       // Reset the form
@@ -137,7 +140,7 @@ class _AddFutsalScreenState extends State<AddFutsalScreen> {
     } catch (e) {
       print('Error adding futsal: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error adding futsal')),
+        const SnackBar(content: Text('Error adding futsal')),
       );
     } finally {
       setState(() {
@@ -162,7 +165,7 @@ class _AddFutsalScreenState extends State<AddFutsalScreen> {
               children: [
                 TextFormField(
                   controller: _nameController,
-                  decoration: InputDecoration(labelText: 'Futsal Name'),
+                  decoration: const InputDecoration(labelText: 'Futsal Name'),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter futsal name';
@@ -172,7 +175,7 @@ class _AddFutsalScreenState extends State<AddFutsalScreen> {
                 ),
                 TextFormField(
                   controller: _priceController,
-                  decoration: InputDecoration(labelText: 'Price'),
+                  decoration: const InputDecoration(labelText: 'Price'),
                   keyboardType: TextInputType.number,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -186,7 +189,7 @@ class _AddFutsalScreenState extends State<AddFutsalScreen> {
                 ),
                 TextFormField(
                   controller: _slotsController,
-                  decoration: InputDecoration(labelText: 'Slots'),
+                  decoration: const InputDecoration(labelText: 'Slots'),
                   keyboardType: TextInputType.number,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -198,11 +201,11 @@ class _AddFutsalScreenState extends State<AddFutsalScreen> {
                     return null;
                   },
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 _imageFiles.isNotEmpty
                     ? GridView.builder(
                   shrinkWrap: true,
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 3,
                     crossAxisSpacing: 8,
                     mainAxisSpacing: 8,
@@ -217,18 +220,18 @@ class _AddFutsalScreenState extends State<AddFutsalScreen> {
                     );
                   },
                 )
-                    : Text('No images selected'),
+                    : const Text('No images selected'),
                 ElevatedButton.icon(
                   onPressed: _pickImages,
-                  icon: Icon(Icons.image),
-                  label: Text('Select Images'),
+                  icon: const Icon(Icons.image),
+                  label: const Text('Select Images'),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 _isLoading
-                    ? CircularProgressIndicator()
+                    ? const CircularProgressIndicator()
                     : ElevatedButton(
                   onPressed: _addFutsal,
-                  child: Text('Add Futsal'),
+                  child: const Text('Add Futsal'),
                 ),
               ],
             ),

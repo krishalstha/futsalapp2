@@ -12,7 +12,6 @@ class DetailBookingScreen extends StatefulWidget {
 class _DetailBookingScreenState extends State<DetailBookingScreen> {
   late String currentAdminUid;
 
-  // Initialize the admin UID from Firebase Authentication
   @override
   void initState() {
     super.initState();
@@ -22,15 +21,16 @@ class _DetailBookingScreenState extends State<DetailBookingScreen> {
   // Function to fetch bookings for the current admin
   Future<List<Map<String, dynamic>>> _fetchAdminBookings() async {
     try {
-      // Fetch all bookings where the 'adminUid' matches the current admin's UID
       final querySnapshot = await FirebaseFirestore.instance
           .collection('bookings')
           .where('adminUid', isEqualTo: currentAdminUid)
           .get();
 
-      // Return the list of booking documents as a list of maps
       return querySnapshot.docs.map((doc) {
-        return doc.data() as Map<String, dynamic>;
+        return {
+          ...doc.data(),
+          'documentId': doc.id, // Store the document ID for later operations
+        } as Map<String, dynamic>;
       }).toList();
     } catch (e) {
       print('Error fetching admin bookings: $e');
@@ -39,16 +39,22 @@ class _DetailBookingScreenState extends State<DetailBookingScreen> {
   }
 
   // Function to accept a booking
-  Future<void> _acceptBooking(String bookingId) async {
+  Future<void> _acceptBooking(String bookingId, Map<String, dynamic> bookingData) async {
     try {
-      await FirebaseFirestore.instance.collection('bookings').doc(bookingId).update({
+      // Create a new entry in the 'acceptedBookings' collection
+      await FirebaseFirestore.instance.collection('acceptedBookings').add({
+        ...bookingData,
         'status': 'Accepted',
         'acceptedAt': FieldValue.serverTimestamp(),
       });
+
+      // Delete the original booking entry
+      await FirebaseFirestore.instance.collection('bookings').doc(bookingId).delete();
+
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Booking accepted')),
+        const SnackBar(content: Text('Booking accepted and moved to acceptedBookings')),
       );
-      setState(() {}); // Refresh the UI to reflect the change
+      setState(() {}); // Refresh the UI to reflect changes
     } catch (e) {
       print('Error accepting booking: $e');
     }
@@ -64,7 +70,7 @@ class _DetailBookingScreenState extends State<DetailBookingScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Booking rejected')),
       );
-      setState(() {}); // Refresh the UI to reflect the change
+      setState(() {}); // Refresh the UI to reflect changes
     } catch (e) {
       print('Error rejecting booking: $e');
     }
@@ -94,7 +100,7 @@ class _DetailBookingScreenState extends State<DetailBookingScreen> {
             itemCount: bookings.length,
             itemBuilder: (context, index) {
               final booking = bookings[index];
-              final bookingId = booking['bookingsId'];
+              final bookingId = booking['documentId'];
               final userPhoneNumber = booking['phoneNumber'];
               final selectedDate = booking['date'];
               final selectedTime = booking['time'];
@@ -127,7 +133,7 @@ class _DetailBookingScreenState extends State<DetailBookingScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
                             ElevatedButton(
-                              onPressed: () => _acceptBooking(bookingId),
+                              onPressed: () => _acceptBooking(bookingId, booking),
                               child: const Text('Accept'),
                               style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
                             ),

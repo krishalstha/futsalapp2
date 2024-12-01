@@ -12,8 +12,8 @@ class _AdminProfileState extends State<AdminProfile> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  String _adminName = 'Loading...';
-  String _adminEmail = 'Loading...';
+  String? _adminName;
+  String? _adminEmail;
 
   @override
   void initState() {
@@ -25,27 +25,27 @@ class _AdminProfileState extends State<AdminProfile> {
     User? user = _auth.currentUser;
 
     if (user != null) {
-      String adminId = user.uid;
+      String userId = user.uid;
 
       try {
-        DocumentSnapshot adminDoc = await _firestore.collection('Admins').doc(adminId).get();
+        DocumentSnapshot userDoc = await _firestore.collection('Users').doc(userId).get();
 
-        if (adminDoc.exists) {
+        if (userDoc.exists) {
           setState(() {
-            _adminName = adminDoc['admin_name'] ?? 'Admin';
-            _adminEmail = adminDoc['email'] ?? 'Email';
+            _adminName = userDoc['full_name']; // Replace 'name' with your Firestore field name if different
+            _adminEmail = userDoc['email']; // Replace 'email' with your Firestore field name if different
           });
         }
       } catch (e) {
         setState(() {
-          _adminName = 'Error fetching data';
-          _adminEmail = 'Error fetching data';
+          _adminName = null;
+          _adminEmail = null;
         });
       }
     } else {
       setState(() {
-        _adminName = 'No Admin';
-        _adminEmail = 'No Admin';
+        _adminName = null;
+        _adminEmail = null;
       });
     }
   }
@@ -89,11 +89,14 @@ class _AdminProfileState extends State<AdminProfile> {
               CircleAvatar(radius: 60, backgroundImage: AssetImage('assets/admin.jpg')),
               SizedBox(height: 20),
               Text(
-                _adminName,
+                _adminName ?? 'No Name Available',
                 style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.deepPurple),
               ),
               SizedBox(height: 10),
-              Text(_adminEmail, style: TextStyle(fontSize: 16, color: Colors.grey[700])),
+              Text(
+                _adminEmail ?? 'No Email Available',
+                style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+              ),
               SizedBox(height: 20),
               Divider(thickness: 1),
               SizedBox(height: 20),
