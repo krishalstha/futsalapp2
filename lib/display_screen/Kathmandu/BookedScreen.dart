@@ -55,10 +55,34 @@ class BookedScreen extends StatelessWidget {
                     return PendingBookingCard(
                       booking: booking,
                       onDelete: () async {
-                        await bookingDoc.reference.delete();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Booking removed successfully')),
+                        final confirmed = await showDialog<bool>(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text('Delete Booking'),
+                            content: const Text(
+                              'Are you sure you want to delete this booking?',
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, false),
+                                child: const Text('Cancel'),
+                              ),
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, true),
+                                child: const Text('Delete'),
+                              ),
+                            ],
+                          ),
                         );
+
+                        if (confirmed == true) {
+                          await bookingDoc.reference.delete();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Booking removed successfully'),
+                            ),
+                          );
+                        }
                       },
                     );
                   },
