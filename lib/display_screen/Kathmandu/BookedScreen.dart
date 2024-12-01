@@ -50,8 +50,17 @@ class BookedScreen extends StatelessWidget {
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: bookings.length,
                   itemBuilder: (context, index) {
-                    final booking = bookings[index].data() as Map<String, dynamic>;
-                    return BookingCard(booking: booking);
+                    final bookingDoc = bookings[index];
+                    final booking = bookingDoc.data() as Map<String, dynamic>;
+                    return PendingBookingCard(
+                      booking: booking,
+                      onDelete: () async {
+                        await bookingDoc.reference.delete();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Booking removed successfully')),
+                        );
+                      },
+                    );
                   },
                 );
               },
@@ -94,6 +103,48 @@ class BookedScreen extends StatelessWidget {
                   },
                 );
               },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class PendingBookingCard extends StatelessWidget {
+  final Map<String, dynamic> booking;
+  final VoidCallback onDelete;
+
+  const PendingBookingCard({Key? key, required this.booking, required this.onDelete})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Futsal: ${booking['futsalId']}'),
+                  Text('Location: ${booking['location']}'),
+                  Text('Date: ${booking['date']}'),
+                  Text('Time: ${booking['time']}'),
+                  Text('Duration: ${booking['duration']} minutes'),
+                  Text('Court: Court ${booking['court']}'),
+                  Text('Payment Method: ${booking['paymentMethod']}'),
+                  Text('Phone: ${booking['phoneNumber']}'),
+                ],
+              ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.cancel, color: Colors.red),
+              onPressed: onDelete,
             ),
           ],
         ),
