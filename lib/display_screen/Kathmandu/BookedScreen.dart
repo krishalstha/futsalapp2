@@ -1,4 +1,3 @@
-//BookedScreen
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -8,90 +7,125 @@ class BookedScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Get the current user's ID
     final userId = FirebaseAuth.instance.currentUser?.uid;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Your Booked Futsal Courts'),
+        title: const Text('Your Booked Futsal Courts'),
         backgroundColor: Colors.teal,
       ),
-      body: StreamBuilder<QuerySnapshot>(
-        // Stream the bookings for the current user only
-        stream: FirebaseFirestore.instance
-            .collection('bookings')
-            .where('userId', isEqualTo: userId)
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          }
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Text(
+                'Pending Bookings',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+            ),
+            StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('bookings')
+                  .where('userId', isEqualTo: userId)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
 
-          if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          }
+                if (snapshot.hasError) {
+                  return const Center(child: Text('Error fetching bookings'));
+                }
 
-          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return Center(child: Text('No bookings available.'));
-          }
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return const Center(child: Text('No pending bookings.'));
+                }
 
-          final bookings = snapshot.data!.docs;
+                final bookings = snapshot.data!.docs;
 
-          return ListView.builder(
-            itemCount: bookings.length,
-            itemBuilder: (context, index) {
-              final booking = bookings[index].data() as Map<String, dynamic>;
+                return ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: bookings.length,
+                  itemBuilder: (context, index) {
+                    final booking = bookings[index].data() as Map<String, dynamic>;
+                    return BookingCard(booking: booking);
+                  },
+                );
+              },
+            ),
+            const Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Text(
+                'Accepted Bookings',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+            ),
+            StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('acceptedBookings')
+                  .where('userId', isEqualTo: userId)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
 
-              return Card(
-                margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'User ID: ${booking['userId']}',
-                        style: TextStyle(fontSize: 16),
-                      ),
-                      Text(
-                        'Futsal: ${booking['futsalId']}',
-                        style: TextStyle(fontSize: 16),
-                      ),
-                      Text(
-                        'Location: ${booking['location']}',
-                        style: TextStyle(fontSize: 16),
-                      ),
-                      Text(
-                        'Date: ${DateTime.parse(booking['date']).toLocal().toString().split(' ')[0]}',
-                        style: TextStyle(fontSize: 16),
-                      ),
-                      Text(
-                        'Time: ${booking['time']}',
-                        style: TextStyle(fontSize: 16),
-                      ),
-                      Text(
-                        'Duration: ${booking['duration']} minutes',
-                        style: TextStyle(fontSize: 16),
-                      ),
-                      Text(
-                        'Court: Court ${booking['court']}',
-                        style: TextStyle(fontSize: 16),
-                      ),
-                      Text(
-                        'Payment Method: ${booking['paymentMethod']}',
-                        style: TextStyle(fontSize: 16),
-                      ),
-                      Text(
-                        'Phone: ${booking['phoneNumber']}',
-                        style: TextStyle(fontSize: 16),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          );
-        },
+                if (snapshot.hasError) {
+                  return const Center(child: Text('Error fetching accepted bookings'));
+                }
+
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return const Center(child: Text('No accepted bookings.'));
+                }
+
+                final acceptedBookings = snapshot.data!.docs;
+
+                return ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: acceptedBookings.length,
+                  itemBuilder: (context, index) {
+                    final booking =
+                    acceptedBookings[index].data() as Map<String, dynamic>;
+                    return BookingCard(booking: booking);
+                  },
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class BookingCard extends StatelessWidget {
+  final Map<String, dynamic> booking;
+
+  const BookingCard({Key? key, required this.booking}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Futsal: ${booking['futsalId']}'),
+            Text('Location: ${booking['location']}'),
+            Text('Date: ${booking['date']}'),
+            Text('Time: ${booking['time']}'),
+            Text('Duration: ${booking['duration']} minutes'),
+            Text('Court: Court ${booking['court']}'),
+            Text('Payment Method: ${booking['paymentMethod']}'),
+            Text('Phone: ${booking['phoneNumber']}'),
+          ],
+        ),
       ),
     );
   }

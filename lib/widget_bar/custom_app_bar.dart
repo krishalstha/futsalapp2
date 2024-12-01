@@ -160,22 +160,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     return 'User';
   }
 
-  Future<List<Map<String, dynamic>>> _getNotifications() async {
-    try {
-      var snapshot = await FirebaseFirestore.instance
-          .collection('notifications')
-          .where('isRead', isEqualTo: false)
-          .orderBy('timestamp', descending: true)
-          .get();
 
-      return snapshot.docs
-          .map((doc) => doc.data() as Map<String, dynamic>)
-          .toList();
-    } catch (e) {
-      print('Error fetching notifications: $e');
-      return [];
-    }
-  }
 
   @override
   Widget build(BuildContext context) {

@@ -82,7 +82,22 @@ class _BookingScreenState extends State<BookingScreen> {
       // Get the current user's ID
       String userId = FirebaseAuth.instance.currentUser!.uid;
 
-      // Save booking data with the userId
+      // Check if the user already has a booking for this futsal
+      QuerySnapshot existingBookingSnapshot = await FirebaseFirestore.instance
+          .collection('bookings')
+          .where('userId', isEqualTo: userId)
+          .where('futsalId', isEqualTo: widget.futsalId)
+          .get();
+
+      if (existingBookingSnapshot.docs.isNotEmpty) {
+        // User already has a booking for this futsal
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('You already have an active booking for this futsal.')),
+        );
+        return; // Exit without saving a new booking, ensuring no success message is shown
+      }
+
+      // Save new booking data
       await FirebaseFirestore.instance.collection('bookings').add({
         'futsalId': widget.futsalId,
         'date': selectedDate,
@@ -97,13 +112,17 @@ class _BookingScreenState extends State<BookingScreen> {
         'createdAt': FieldValue.serverTimestamp(),
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Booking successful!')));
+      // Only show this message if the booking is successful
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Booking successful!')),
+      );
     } catch (e) {
       print('Error saving booking: $e');
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to save booking')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to save booking')),
+      );
     }
   }
-
 
 
   @override
@@ -351,7 +370,6 @@ class _BookingScreenState extends State<BookingScreen> {
                           bool isAvailable = await isTimeSlotAvailable(selectedDate, selectedTime, selectedDuration, selectedCourt);
                           if (isAvailable) {
                             saveBooking(); // Save booking logic
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Booking Confirmed!')));
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Time slot is already booked')));
                           }

@@ -15,7 +15,7 @@ class _DetailBookingScreenState extends State<DetailBookingScreen> {
   @override
   void initState() {
     super.initState();
-    currentAdminUid = FirebaseAuth.instance.currentUser!.uid; // Fetch the current user's UID
+    currentAdminUid = FirebaseAuth.instance.currentUser!.uid; // Fetch the current admin UID
   }
 
   // Function to fetch bookings for the current admin
@@ -41,20 +41,21 @@ class _DetailBookingScreenState extends State<DetailBookingScreen> {
   // Function to accept a booking
   Future<void> _acceptBooking(String bookingId, Map<String, dynamic> bookingData) async {
     try {
-      // Create a new entry in the 'acceptedBookings' collection
+      // Add the booking to 'acceptedBookings'
       await FirebaseFirestore.instance.collection('acceptedBookings').add({
         ...bookingData,
         'status': 'Accepted',
         'acceptedAt': FieldValue.serverTimestamp(),
       });
 
-      // Delete the original booking entry
+      // Remove the original booking from 'bookings'
       await FirebaseFirestore.instance.collection('bookings').doc(bookingId).delete();
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Booking accepted and moved to acceptedBookings')),
       );
-      setState(() {}); // Refresh the UI to reflect changes
+
+      setState(() {}); // Refresh UI to reflect changes
     } catch (e) {
       print('Error accepting booking: $e');
     }
@@ -67,10 +68,12 @@ class _DetailBookingScreenState extends State<DetailBookingScreen> {
         'status': 'Rejected',
         'rejectedAt': FieldValue.serverTimestamp(),
       });
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Booking rejected')),
       );
-      setState(() {}); // Refresh the UI to reflect changes
+
+      setState(() {}); // Refresh UI to reflect changes
     } catch (e) {
       print('Error rejecting booking: $e');
     }
@@ -123,7 +126,7 @@ class _DetailBookingScreenState extends State<DetailBookingScreen> {
                       Text('Date: $selectedDate'),
                       Text('Time: $selectedTime'),
                       Text('Court: $selectedCourt'),
-                      Text('Duration: $selectedDuration'),
+                      Text('Duration: $selectedDuration minutes'),
                       Text('Payment Method: $selectedPaymentMethod'),
                       const SizedBox(height: 16),
                       Text('Status: $status', style: TextStyle(color: status == 'Accepted' ? Colors.green : Colors.red)),
