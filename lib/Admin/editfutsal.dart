@@ -1,14 +1,12 @@
+import 'dart:convert';
 import 'dart:io';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'package:firebase_auth/firebase_auth.dart';
 
 class EditFutsalScreen extends StatefulWidget {
-  const EditFutsalScreen({Key? key}) : super(key: key);
-
   @override
   _EditFutsalScreenState createState() => _EditFutsalScreenState();
 }
@@ -19,91 +17,72 @@ class _EditFutsalScreenState extends State<EditFutsalScreen> {
   final TextEditingController _priceController = TextEditingController();
   final TextEditingController _slotsController = TextEditingController();
 
-  List<String> _currentImageUrls = [];
-  List<File> _newImages = [];
+  List<File> _newImageFiles = [];
+  List<String> _existingImageUrls = [];
   bool _isLoading = false;
   String? _futsalId;
 
   @override
   void initState() {
     super.initState();
-    _loadFutsalData();
+    _fetchFutsalDetails();
   }
 
-  // Fetch futsalId from Firestore for the currently logged-in user
-  Future<void> _loadFutsalData() async {
+  Future<void> _fetchFutsalDetails() async {
+    setState(() {
+      _isLoading = true;
+    });
+
     try {
-      // Get the current user
-      User? user = FirebaseAuth.instance.currentUser;
+      final userUid = FirebaseAuth.instance.currentUser?.uid;
+      if (userUid == null) throw Exception("Admin not authenticated");
 
-      if (user != null) {
-        // Query Firestore to get futsalId related to the current user
-        final userDoc = await FirebaseFirestore.instance
-            .collection('users')
-            .doc(user.uid)
-            .get();
-
-        if (userDoc.exists) {
-          // Assuming each user has a futsalId field
-          setState(() {
-            _futsalId = userDoc.data()?['futsalId'];  // Adjust this according to your DB structure
-          });
-
-          if (_futsalId != null) {
-            // Load futsal details after fetching futsalId
-            _loadFutsalDetails(_futsalId!);
-          }
-        }
-      }
-    } catch (e) {
-      print('Error fetching futsal data: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error fetching futsal data')),
-      );
-    }
-  }
-
-  // Load futsal details from Firestore using the futsalId
-  Future<void> _loadFutsalDetails(String futsalId) async {
-    try {
-      final doc = await FirebaseFirestore.instance
+      // Fetch the admin's futsal document
+      final futsalSnapshot = await FirebaseFirestore.instance
           .collection('futsals')
-          .doc(futsalId)
+          .where('adminUid', isEqualTo: userUid)
           .get();
 
-      if (doc.exists) {
-        final data = doc.data()!;
-        setState(() {
-          _nameController.text = data['name'];
-          _priceController.text = data['price'].toString();
-          _slotsController.text = data['slots'].toString();
-          _currentImageUrls = List<String>.from(data['images'] ?? []);
-        });
+      if (futsalSnapshot.docs.isEmpty) {
+        throw Exception("No futsal found for this admin");
       }
-    } catch (e) {
-      print('Error loading futsal data: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error loading futsal data')),
-      );
-    }
-  }
 
-  // Pick new images to update
-  Future<void> _pickImages() async {
-    final pickedFiles = await ImagePicker().pickMultiImage();
-    if (pickedFiles != null && pickedFiles.isNotEmpty) {
+      final futsalDoc = futsalSnapshot.docs.first;
+      _futsalId = futsalDoc.id;
+
+      // Populate fields with futsal data
+      final data = futsalDoc.data();
+      _nameController.text = data['name'] ?? '';
+      _priceController.text = (data['price'] ?? '').toString();
+      _slotsController.text = (data['slots'] ?? '').toString();
+      _existingImageUrls = List<String>.from(data['images'] ?? []);
+    } catch (e) {
+      print('Error fetching futsal details: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    } finally {
       setState(() {
-        _newImages = pickedFiles.map((file) => File(file.path)).toList();
+        _isLoading = false;
       });
     }
   }
 
-  // Upload new images to imgBB and return URLs
+  Future<void> _pickImages() async {
+    final pickedFiles = await ImagePicker().pickMultiImage();
+    if (pickedFiles != null && pickedFiles.isNotEmpty) {
+      setState(() {
+        _newImageFiles = pickedFiles.map((file) => File(file.path)).toList();
+      });
+    }
+  }
+
   Future<List<String>> _uploadImages(List<File> images) async {
     List<String> imageUrls = [];
     try {
       for (var image in images) {
-        final uri = Uri.parse("https://api.imgbb.com/1/upload?key=431e010fb1591bffe80f792f64ce75b6");
+        final uri = Uri.parse(
+            "https://api.imgbb.com/1/upload?key=431e010fb1591bffe80f792f64ce75b6");
         var request = http.MultipartRequest('POST', uri);
         request.files.add(await http.MultipartFile.fromPath('image', image.path));
 
@@ -122,9 +101,8 @@ class _EditFutsalScreenState extends State<EditFutsalScreen> {
     return imageUrls;
   }
 
-  // Save changes to Firestore
-  Future<void> _saveChanges() async {
-    if (!_formKey.currentState!.validate()) {
+  Future<void> _updateFutsal() async {
+    if (!_formKey.currentState!.validate() || _futsalId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please complete all fields')),
       );
@@ -136,31 +114,30 @@ class _EditFutsalScreenState extends State<EditFutsalScreen> {
     });
 
     try {
-      List<String> updatedImageUrls = _currentImageUrls;
+      // Upload new images if any
+      final newImageUrls = await _uploadImages(_newImageFiles);
 
-      // If there are new images, upload them
-      if (_newImages.isNotEmpty) {
-        final newImageUrls = await _uploadImages(_newImages);
-        updatedImageUrls.addAll(newImageUrls);
-      }
+      // Combine existing and new image URLs
+      final updatedImageUrls = [..._existingImageUrls, ...newImageUrls];
 
-      // Update the futsal in Firestore
-      await FirebaseFirestore.instance.collection('futsals').doc(_futsalId).update({
+      // Update futsal in Firestore
+      await FirebaseFirestore.instance.collection('futsals').doc(_futsalId!).update({
         'name': _nameController.text.trim(),
         'price': double.parse(_priceController.text.trim()),
         'slots': int.parse(_slotsController.text.trim()),
         'images': updatedImageUrls,
+        'updatedAt': FieldValue.serverTimestamp(),
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Futsal updated successfully')),
       );
 
-      Navigator.of(context).pop();
+      Navigator.pop(context);
     } catch (e) {
-      print('Error saving futsal changes: $e');
+      print('Error updating futsal: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error saving futsal changes')),
+        const SnackBar(content: Text('Error updating futsal')),
       );
     } finally {
       setState(() {
@@ -174,7 +151,7 @@ class _EditFutsalScreenState extends State<EditFutsalScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Edit Futsal'),
-        backgroundColor: Colors.orange,
+        backgroundColor: Colors.redAccent,
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -224,9 +201,21 @@ class _EditFutsalScreenState extends State<EditFutsalScreen> {
                   },
                 ),
                 const SizedBox(height: 16),
-                Text('Current Images', style: TextStyle(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 8),
-                _currentImageUrls.isNotEmpty
+                _existingImageUrls.isNotEmpty
+                    ? Wrap(
+                  spacing: 8.0,
+                  children: _existingImageUrls
+                      .map((url) => Image.network(
+                    url,
+                    height: 100,
+                    width: 100,
+                    fit: BoxFit.cover,
+                  ))
+                      .toList(),
+                )
+                    : const Text('No existing images'),
+                const SizedBox(height: 16),
+                _newImageFiles.isNotEmpty
                     ? GridView.builder(
                   shrinkWrap: true,
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -234,47 +223,28 @@ class _EditFutsalScreenState extends State<EditFutsalScreen> {
                     crossAxisSpacing: 8,
                     mainAxisSpacing: 8,
                   ),
-                  itemCount: _currentImageUrls.length,
+                  itemCount: _newImageFiles.length,
                   itemBuilder: (context, index) {
-                    return Image.network(
-                      _currentImageUrls[index],
+                    return Image.file(
+                      _newImageFiles[index],
                       height: 100,
                       width: 100,
                       fit: BoxFit.cover,
                     );
                   },
                 )
-                    : const Text('No images available'),
-                const SizedBox(height: 16),
+                    : const Text('No new images selected'),
                 ElevatedButton.icon(
                   onPressed: _pickImages,
                   icon: const Icon(Icons.image),
-                  label: const Text('Add New Images'),
+                  label: const Text('Select Images'),
                 ),
                 const SizedBox(height: 20),
-                _newImages.isNotEmpty
-                    ? GridView.builder(
-                  shrinkWrap: true,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3,
-                    crossAxisSpacing: 8,
-                    mainAxisSpacing: 8,
-                  ),
-                  itemCount: _newImages.length,
-                  itemBuilder: (context, index) {
-                    return Image.file(
-                      _newImages[index],
-                      height: 100,
-                      width: 100,
-                      fit: BoxFit.cover,
-                    );
-                  },
-                )
-                    : const SizedBox.shrink(),
-                const SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: _saveChanges,
-                  child: const Text('Save Changes'),
+                _isLoading
+                    ? const CircularProgressIndicator()
+                    : ElevatedButton(
+                  onPressed: _updateFutsal,
+                  child: const Text('Update Futsal'),
                 ),
               ],
             ),
