@@ -8,15 +8,38 @@ class ManageNotifications extends StatefulWidget {
 }
 
 class _ManageNotificationsState extends State<ManageNotifications> {
+  bool _isSending = false; // To track if notification is being sent
+
   // Save notification to Firestore
   Future<void> _addNotification(String message) async {
+    if (_isSending) return; // Prevent sending if already sending
+    setState(() {
+      _isSending = true; // Mark as sending
+    });
+
     try {
-      await FirebaseFirestore.instance.collection('notifications').add({
-        'message': message,
-        'timestamp': Timestamp.now(),
-      });
+      // Check if the message already exists
+      QuerySnapshot snapshot = await FirebaseFirestore.instance
+          .collection('notifications')
+          .where('message', isEqualTo: message)
+          .get();
+
+      if (snapshot.docs.isEmpty) {
+        // If no duplicate found, save the notification
+        await FirebaseFirestore.instance.collection('notifications').add({
+          'message': message,
+          'timestamp': Timestamp.now(),
+        });
+        print("Notification added successfully");
+      } else {
+        print("Notification already exists");
+      }
     } catch (e) {
       print("Error adding notification: $e");
+    } finally {
+      setState(() {
+        _isSending = false; // Reset sending status
+      });
     }
   }
 

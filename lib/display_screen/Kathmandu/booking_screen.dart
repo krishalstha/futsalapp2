@@ -13,6 +13,7 @@ class BookingScreen extends StatefulWidget {
   _BookingScreenState createState() => _BookingScreenState();
 }
 
+
 class _BookingScreenState extends State<BookingScreen> {
   final _formKey = GlobalKey<FormState>();
   String selectedDate = '';
@@ -24,6 +25,33 @@ class _BookingScreenState extends State<BookingScreen> {
   String futsalLocation = 'Unknown Location';
   String? futsalName;
   String? adminUid;
+
+  String bookedTime = ''; // Store the booked time
+  String bookedDuration = ''; // Store the booked duration
+  String Date = '';
+  DateTime? bookingEndTime; //store the EndingTime
+
+
+  //Wednesday Discount
+  double calculatePrice(double basePrice) {
+    DateTime today = DateTime.now();
+    if (today.weekday == DateTime.wednesday) {
+      // Apply 20% discount on Wednesdays
+      return basePrice * 0.8;
+    } else if (today.weekday == DateTime.friday || today.weekday == DateTime.saturday) {
+      // Apply 20% extra charge on Fridays and Saturdays
+      return basePrice * 1.2;
+    } else {
+      // Regular price on other days
+      return basePrice;
+    }
+  }
+  //Display Booked Time
+
+
+
+
+
 
   Future<bool> isTimeSlotAvailable(String selectedDate, String selectedTime, String selectedDuration, String selectedCourt) async {
     try {
@@ -97,6 +125,10 @@ class _BookingScreenState extends State<BookingScreen> {
         return; // Exit without saving a new booking, ensuring no success message is shown
       }
 
+      Duration duration = _parseDuration(selectedDuration);
+      DateTime bookingStartTime = DateTime.parse('$selectedDate ${DateFormat('HH:mm:ss').format(DateFormat.jm().parse(selectedTime))}');
+      bookingEndTime = bookingStartTime.add(duration);
+
       // Save new booking data
       await FirebaseFirestore.instance.collection('bookings').add({
         'futsalId': widget.futsalId,
@@ -112,6 +144,12 @@ class _BookingScreenState extends State<BookingScreen> {
         'createdAt': FieldValue.serverTimestamp(),
       });
 
+// Update bookedTime and bookedDuration state
+      setState(() {
+        bookedTime = selectedTime;
+        bookedDuration = selectedDuration;
+      });
+
       // Only show this message if the booking is successful
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Booking successful!')),
@@ -124,6 +162,10 @@ class _BookingScreenState extends State<BookingScreen> {
     }
   }
 
+  bool isBookingActive() {
+    if (bookingEndTime == null) return false;
+    return DateTime.now().isBefore(bookingEndTime!);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -133,10 +175,7 @@ class _BookingScreenState extends State<BookingScreen> {
         backgroundColor: Colors.teal,
       ),
       body: FutureBuilder<DocumentSnapshot>(
-        future: FirebaseFirestore.instance
-            .collection('futsals')
-            .doc(widget.futsalId)
-            .get(),
+        future: FirebaseFirestore.instance.collection('futsals').doc(widget.futsalId).get(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -147,145 +186,158 @@ class _BookingScreenState extends State<BookingScreen> {
           }
 
           final futsalData = snapshot.data!.data() as Map<String, dynamic>;
-          futsalName = futsalData['name'];
-          final futsalPrice = futsalData['price'];
-          futsalLocation = futsalData['location'] ?? 'Unknown Location'; // Location
-          adminUid = futsalData['adminUid']; // Get admin UID
+          futsalName = futsalData['name'] ?? 'Unnamed Futsal';
 
-          return Padding(
+          // Ensure the price is converted to a double, even if it's stored as an int
+          final double basePrice = (futsalData['price'] as num).toDouble();
+
+          final double displayPrice = calculatePrice(basePrice);
+          futsalLocation = futsalData['location'] ?? 'Unknown Location';
+          adminUid = futsalData['adminUid'];
+
+          return SingleChildScrollView(
             padding: const EdgeInsets.all(16.0),
             child: Form(
               key: _formKey,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text(
-                    futsalName ?? 'Unnamed Futsal',
-                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  Card(
+                    elevation: 4,
+                    margin: const EdgeInsets.only(bottom: 16),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            futsalName ?? 'Unnamed Futsal',
+                            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Price: Rs ${displayPrice.toStringAsFixed(2)}/hr',
+                            style: TextStyle(color: Colors.grey[700]),
+                          ),
+                          const SizedBox(height: 4),
+
+                          Text('Location: $futsalLocation', style: TextStyle(color: Colors.grey[700])),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Note: Prices vary by day of the week. Enjoy 20% off on Wednesdays! A 20% surcharge applies on Fridays and Saturdays.',
+                            style: const TextStyle(color: Colors.red, fontSize: 12),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 16),
-                  Text('Price: Rs $futsalPrice/hr'),
+                  // _buildDateField(),
+
+
+                  // Booked time display
+                  if (bookedTime.isNotEmpty)
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Booked Time:',
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 8),
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.teal[100],
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Time: $bookedTime', style: const TextStyle(fontSize: 16)),
+                              Text('Duration: $bookedDuration', style: const TextStyle(fontSize: 16)),
+                              Text('Date: $selectedDate', style: const TextStyle(fontSize: 16))
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   const SizedBox(height: 16),
-                  Text('Location: $futsalLocation'),
+                  const SizedBox(height: 16),
                   const SizedBox(height: 16),
                   // Date picker
                   TextFormField(
                     initialValue: selectedDate,
-                    decoration: InputDecoration(
+                    decoration:const InputDecoration(
+                      border: OutlineInputBorder(),
                       labelText: 'Select Date',
                       prefixIcon: Icon(Icons.calendar_today),
                     ),
-                    onTap: () async {
-                      DateTime? pickedDate = await showDatePicker(
-                        context: context,
-                        initialDate: DateTime.now(),
-                        firstDate: DateTime.now(), // Restrict to current date and future dates
-                        lastDate: DateTime(2025),
-                      );
-                      if (pickedDate != null && pickedDate.isAfter(DateTime.now().subtract(Duration(days: 1)))) {
-                        setState(() {
-                          selectedDate = pickedDate.toString().substring(0, 10); // Format the date
-                        });
-                      } else {
-                        // Optionally, you can show a dialog if the user tries to pick a past date
-                        showDialog(
+                      onTap: () async {
+                        DateTime? pickedDate = await showDatePicker(
                           context: context,
-                          builder: (BuildContext context) {
-                            return AlertDialog(
-                              title: Text('Invalid Date'),
-                              content: Text('Please select a date from today or in the future.'),
-                              actions: <Widget>[
-                                TextButton(
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                  },
-                                  child: Text('OK'),
-                                ),
-                              ],
-                            );
-                          },
+                          initialDate: DateTime.now(),
+                          firstDate: DateTime.now(), // Allow only today or future dates
+                          lastDate: DateTime(2025), // Set a reasonable limit for booking
                         );
+
+                        if (pickedDate != null) {
+                          setState(() {
+                            selectedDate = DateFormat('yyyy-MM-dd').format(pickedDate); // Format to 'YYYY-MM-DD'
+                          });
+                        }
                       }
-                    },
+
                   ),
                   const SizedBox(height: 16),
+                  const SizedBox(height: 16),
+
                   // Time picker
                   TextFormField(
                     initialValue: selectedTime,
-                    decoration: InputDecoration(
+                    decoration:const InputDecoration(
+                      border: OutlineInputBorder(),
                       labelText: 'Select Time',
                       prefixIcon: Icon(Icons.access_time),
                     ),
-                    onTap: () async {
-                      TimeOfDay? pickedTime = await showTimePicker(
-                        context: context,
-                        initialTime: TimeOfDay.now(),
-                        builder: (BuildContext context, Widget? child) {
-                          return MediaQuery(
-                            data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: false),
-                            child: child!,
-                          );
-                        },
-                      );
+                      onTap: () async {
+                        TimeOfDay? pickedTime = await showTimePicker(
+                          context: context,
+                          initialTime: TimeOfDay.now(),
+                        );
 
-                      if (pickedTime != null) {
-                        // Get the current time
-                        TimeOfDay currentTime = TimeOfDay.now();
+                        if (pickedTime != null) {
+                          // Combine the selected date and picked time for comparison
+                          DateTime now = DateTime.now();
+                          DateTime selectedDateTime = DateFormat('yyyy-MM-dd').parse(selectedDate);
+                          DateTime pickedDateTime = DateTime(
+                            selectedDateTime.year,
+                            selectedDateTime.month,
+                            selectedDateTime.day,
+                            pickedTime.hour,
+                            pickedTime.minute,
+                          );
 
-                        // Check if the picked time is before the current time
-                        if (pickedTime.hour < currentTime.hour ||
-                            (pickedTime.hour == currentTime.hour && pickedTime.minute < currentTime.minute)) {
-                          // Show an alert if the selected time is in the past
-                          showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return AlertDialog(
-                                title: Text('Invalid Time'),
-                                content: Text('Please select a time that is in the future.'),
-                                actions: <Widget>[
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.of(context).pop();
-                                    },
-                                    child: Text('OK'),
-                                  ),
-                                ],
-                              );
-                            },
-                          );
-                        } else if (pickedTime.hour >= 7 && pickedTime.hour <= 23) {
-                          // Check if the picked time is within the range of 7 AM to 11 PM
-                          setState(() {
-                            selectedTime = pickedTime.format(context);
-                          });
-                        } else {
-                          // Show a message if the selected time is out of range (7 AM to 11 PM)
-                          showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return AlertDialog(
-                                title: Text('Invalid Time'),
-                                content: Text('Please select a time between 7 AM and 11 PM.'),
-                                actions: <Widget>[
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.of(context).pop();
-                                    },
-                                    child: Text('OK'),
-                                  ),
-                                ],
-                              );
-                            },
-                          );
+                          // Ensure the picked time is in the future
+                          if (pickedDateTime.isAfter(now)) {
+                            setState(() {
+                              selectedTime = pickedTime.format(context); // Format to 12-hour format
+                            });
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Please select a time in the future.')),
+                            );
+                          }
                         }
                       }
-                    },
                   ),
+
+                  const SizedBox(height: 16),
                   const SizedBox(height: 16),
                   // Duration selection
                   DropdownButtonFormField<String>(
                     value: selectedDuration,
-                    decoration: InputDecoration(labelText: 'Select Duration'),
+                    decoration:const InputDecoration(border: OutlineInputBorder(),labelText: 'Select Duration'),
                     onChanged: (String? newValue) {
                       setState(() {
                         selectedDuration = newValue!;
@@ -303,7 +355,7 @@ class _BookingScreenState extends State<BookingScreen> {
                   // Court selection
                   DropdownButtonFormField<String>(
                     value: selectedCourt,
-                    decoration: InputDecoration(labelText: 'Select Court'),
+                    decoration:const InputDecoration(border: OutlineInputBorder(),labelText: 'Select Court'),
                     onChanged: (String? newValue) {
                       setState(() {
                         selectedCourt = newValue!;
@@ -321,7 +373,7 @@ class _BookingScreenState extends State<BookingScreen> {
                   // Payment method selection
                   DropdownButtonFormField<String>(
                     value: selectedPaymentMethod,
-                    decoration: InputDecoration(labelText: 'Select Payment Method'),
+                    decoration: const InputDecoration(border: OutlineInputBorder(),labelText: 'Select Payment Method'),
                     onChanged: (String? newValue) {
                       setState(() {
                         selectedPaymentMethod = newValue!;
@@ -338,7 +390,9 @@ class _BookingScreenState extends State<BookingScreen> {
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: phoneController,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.phone),
                       labelText: "Phone",
                       filled: true,
                       fillColor: Colors.transparent,
@@ -361,27 +415,28 @@ class _BookingScreenState extends State<BookingScreen> {
                   const SizedBox(height: 16),
                   // Book button
                   ElevatedButton(
-                      onPressed: () async {
-                        if (selectedDate.isEmpty || selectedTime.isEmpty || selectedDuration.isEmpty || selectedCourt.isEmpty) {
-                          // Validation check
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Please select all fields')));
+                    onPressed: () async {
+                      if (selectedDate.isEmpty || selectedTime.isEmpty || selectedDuration.isEmpty || selectedCourt.isEmpty) {
+                        // Validation check
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Please select all fields')));
+                      } else {
+                        // Check if the selected time slot is available
+                        bool isAvailable = await isTimeSlotAvailable(selectedDate, selectedTime, selectedDuration, selectedCourt);
+                        if (isAvailable) {
+                          saveBooking(); // Save booking logic
                         } else {
-                          // Check if the selected time slot is available
-                          bool isAvailable = await isTimeSlotAvailable(selectedDate, selectedTime, selectedDuration, selectedCourt);
-                          if (isAvailable) {
-                            saveBooking(); // Save booking logic
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Time slot is already booked')));
-                          }
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Time slot is already booked')));
                         }
-                      },
+                      }
+                    },
 
-                      child: Text('Book Now'),
+                    child: Text('Book Now'),
                     style: ElevatedButton.styleFrom(
                       padding: EdgeInsets.symmetric(vertical: 16),
                       textStyle: TextStyle(fontSize: 18),
                     ),
                   ),
+
                 ],
               ),
             ),

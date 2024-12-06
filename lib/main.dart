@@ -47,7 +47,7 @@ class _MyAppState extends State<MyApp> {
       debugShowCheckedModeBanner: false,
       home: _user == null
           ? LoginPage()
-          : AdminDashboard(), // Pass the user ID to UserNavigationMenu
+          : MyHome(), // Pass the user ID to UserNavigationMenu
       routes: appRoutes,
       theme: ThemeData(
         primarySwatch: Colors.teal,

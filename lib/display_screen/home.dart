@@ -33,7 +33,8 @@ class MyHome extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(), // Use the custom app bar
+      appBar: CustomAppBar(),
+      // Use the custom app bar
       body: FutureBuilder<List<Futsal>>(
         future: fetchFutsals(),
         builder: (context, snapshot) {

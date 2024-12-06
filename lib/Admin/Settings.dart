@@ -62,18 +62,12 @@ class _AdminProfileState extends State<AdminProfile> {
         actions: [
           PopupMenuButton<String>(
             onSelected: (value) {
-              if (value == 'Manage Users') {
-                // Navigate to a screen for managing users
-              } else if (value == 'View Reports') {
-                // Navigate to a screen for viewing reports
-              } else if (value == 'LogOut') {
+              if (value == 'LogOut') {
                 _showLogoutDialog(context);
               }
             },
             itemBuilder: (BuildContext context) {
               return [
-                PopupMenuItem(value: 'Manage Users', child: Text('Manage Users')),
-                PopupMenuItem(value: 'View Reports', child: Text('View Reports')),
                 PopupMenuItem(value: 'LogOut', child: Text('Logout')),
               ];
             },
@@ -100,12 +94,6 @@ class _AdminProfileState extends State<AdminProfile> {
               SizedBox(height: 20),
               Divider(thickness: 1),
               SizedBox(height: 20),
-              _buildAdminButton(context, Icons.supervised_user_circle, 'Manage Users', () {
-                // Navigate to manage users screen
-              }),
-              _buildAdminButton(context, Icons.assessment, 'View Reports', () {
-                // Navigate to view reports screen
-              }),
               _buildAdminButton(context, Icons.logout, 'Logout', () {
                 _showLogoutDialog(context);
               }),
