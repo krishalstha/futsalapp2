@@ -173,6 +173,7 @@ class _BookingScreenState extends State<BookingScreen> {
       appBar: AppBar(
         title: const Text('Book Futsal Court'),
         backgroundColor: Colors.teal,
+
       ),
       body: FutureBuilder<DocumentSnapshot>(
         future: FirebaseFirestore.instance.collection('futsals').doc(widget.futsalId).get(),
