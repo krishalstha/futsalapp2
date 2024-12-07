@@ -103,13 +103,20 @@ class AdminDashboard extends StatelessWidget {
       ),
     ];
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Admin Dashboard',
-          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-        ),
+    return WillPopScope(
+        onWillPop: () async {
+          // Return false to indicate that the app should close.
+          return false;
+        },
+
+    child: Scaffold(
+    appBar: AppBar(
+    title: const Text(
+    'Admin Dashboard',
+    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+    ),
         backgroundColor: Colors.teal.shade700,
+      automaticallyImplyLeading: false,
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
@@ -141,6 +148,7 @@ class AdminDashboard extends StatelessWidget {
           ),
         ),
       ),
+    )
     );
   }
 }
