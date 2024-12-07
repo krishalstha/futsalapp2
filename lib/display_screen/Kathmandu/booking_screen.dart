@@ -48,8 +48,34 @@ class _BookingScreenState extends State<BookingScreen> {
   }
   //Display Booked Time
 
+  Future<void> _loadBookingFromFirestore() async {
+    try {
+      String userId = FirebaseAuth.instance.currentUser!.uid;
+      QuerySnapshot bookingSnapshot = await FirebaseFirestore.instance
+          .collection('bookings')
+          .where('userId', isEqualTo: userId)
+          .orderBy('createdAt', descending: true) // Latest booking
+          .limit(1)
+          .get();
 
+      if (bookingSnapshot.docs.isNotEmpty) {
+        var bookingData = bookingSnapshot.docs.first.data() as Map<String, dynamic>;
+        setState(() {
+          bookedTime = bookingData['time'] ?? '';
+          bookedDuration = bookingData['duration'] ?? '';
+          selectedDate = bookingData['date'] ?? '';
+        });
+      }
+    } catch (e) {
+      print('Error loading booking: $e');
+    }
+  }
 
+  @override
+  void initState() {
+    super.initState();
+    _loadBookingFromFirestore();
+  }
 
 
 
@@ -173,7 +199,6 @@ class _BookingScreenState extends State<BookingScreen> {
       appBar: AppBar(
         title: const Text('Book Futsal Court'),
         backgroundColor: Colors.teal,
-
       ),
       body: FutureBuilder<DocumentSnapshot>(
         future: FirebaseFirestore.instance.collection('futsals').doc(widget.futsalId).get(),
@@ -189,9 +214,7 @@ class _BookingScreenState extends State<BookingScreen> {
           final futsalData = snapshot.data!.data() as Map<String, dynamic>;
           futsalName = futsalData['name'] ?? 'Unnamed Futsal';
 
-          // Ensure the price is converted to a double, even if it's stored as an int
           final double basePrice = (futsalData['price'] as num).toDouble();
-
           final double displayPrice = calculatePrice(basePrice);
           futsalLocation = futsalData['location'] ?? 'Unknown Location';
           adminUid = futsalData['adminUid'];
@@ -268,12 +291,12 @@ class _BookingScreenState extends State<BookingScreen> {
                   const SizedBox(height: 16),
                   // Date picker
                   TextFormField(
-                    initialValue: selectedDate,
-                    decoration:const InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: 'Select Date',
-                      prefixIcon: Icon(Icons.calendar_today),
-                    ),
+                      initialValue: selectedDate,
+                      decoration:const InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: 'Select Date',
+                        prefixIcon: Icon(Icons.calendar_today),
+                      ),
                       onTap: () async {
                         DateTime? pickedDate = await showDatePicker(
                           context: context,
@@ -295,12 +318,12 @@ class _BookingScreenState extends State<BookingScreen> {
 
                   // Time picker
                   TextFormField(
-                    initialValue: selectedTime,
-                    decoration:const InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: 'Select Time',
-                      prefixIcon: Icon(Icons.access_time),
-                    ),
+                      initialValue: selectedTime,
+                      decoration:const InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: 'Select Time',
+                        prefixIcon: Icon(Icons.access_time),
+                      ),
                       onTap: () async {
                         TimeOfDay? pickedTime = await showTimePicker(
                           context: context,

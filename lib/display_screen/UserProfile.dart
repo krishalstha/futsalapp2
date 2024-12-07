@@ -60,6 +60,7 @@ class _UserProfileState extends State<UserProfile> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false, // Removes the back button
         title: Text(
           'User Profile',
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24, color: Colors.white),
