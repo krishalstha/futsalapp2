@@ -7,7 +7,11 @@ import 'Admin/Dashboard.dart';
 import 'Authentication/LogIn.dart';
 import 'NavigationBar/UserNavbar.dart';
 import 'NavigationBar/routes/routes.dart'; // Import your UserNavigationMenu here
+import 'package:firebase_messaging/firebase_messaging.dart';
 
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  print("Background Message: ${message.notification?.title}");
+}
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -18,6 +22,8 @@ Future<void> main() async {
   } catch (e) {
     print('Failed to initialize Firebase: $e');
   }
+  FirebaseMessaging.onBackgroundMessage(
+      _firebaseMessagingBackgroundHandler);
 
   runApp(MyApp());
 }
@@ -33,11 +39,27 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
+    FirebaseMessaging.instance.requestPermission(
+      alert: true,
+      badge: true,
+      sound: true,
+    ).then((settings) {
+    print('Permission status: ${settings.authorizationStatus}');
+    });
     // Listen to authentication state changes
     FirebaseAuth.instance.authStateChanges().listen((User? user) {
       setState(() {
         _user = user;
       });
+    });
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      print("Foreground notification:");
+      print(message.notification?.title);
+      print(message.notification?.body);
+    });
+
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      print("Notification clicked");
     });
   }
 

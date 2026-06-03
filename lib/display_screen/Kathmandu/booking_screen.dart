@@ -302,7 +302,7 @@ class _BookingScreenState extends State<BookingScreen> {
                           context: context,
                           initialDate: DateTime.now(),
                           firstDate: DateTime.now(), // Allow only today or future dates
-                          lastDate: DateTime(2025), // Set a reasonable limit for booking
+                          lastDate: DateTime(2030), // Set a reasonable limit for booking
                         );
 
                         if (pickedDate != null) {

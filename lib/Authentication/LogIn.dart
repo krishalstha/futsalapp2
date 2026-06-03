@@ -6,6 +6,7 @@ import '../Admin/Dashboard.dart';
 import '../NavigationBar/UserNavbar.dart';
 import 'Forget.dart';
 import 'Register.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -32,6 +33,14 @@ class _LoginPageState extends State<LoginPage> {
         );
 
         String uid = userCredential.user!.uid;
+        String? token = await FirebaseMessaging.instance.getToken();
+
+        await FirebaseFirestore.instance
+            .collection('Users')
+            .doc(uid)
+            .update({
+          'fcmToken': token,
+        });
         DocumentSnapshot userDoc = await _firestore.collection('Users').doc(uid).get();
         String role = userDoc['role'];
 

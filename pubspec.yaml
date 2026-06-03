@@ -23,6 +23,8 @@ dependencies:
   #firebase
   firebase_core: ^3.3.0
   firebase_auth: ^5.3.0
+  firebase_messaging: ^15.0.0
+  flutter_local_notifications: ^17.0.0
   cloud_firestore: ^5.4.2
   firebase_storage: ^12.1.0
   cloud_functions: ^5.0.3
